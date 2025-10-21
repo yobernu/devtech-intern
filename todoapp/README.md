@@ -1,16 +1,16 @@
 # todoapp
 
-A new Flutter project.
-
 ## Getting Started
+# Task 1: Simple To-Do List App
 
-This project is a starting point for a Flutter application.
+Description:
+Create a mobile app that helps users manage daily
+tasks. Users should be able to:
+- Add new tasks
+- Edit or delete existing tasks
+- Mark completed ones
+- Keep their tasks saved even after closing the app
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Goal:
+Learn how to handle user input, save data locally,
+and create a clean Android interface.
