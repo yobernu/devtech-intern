@@ -1,4 +1,4 @@
-class TaskEntity {
+class TaskModel {
   final String id;
   final String title;
   final String? description;
@@ -8,7 +8,7 @@ class TaskEntity {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
-  TaskEntity({
+  TaskModel({
     required this.id,
     required this.title,
     this.description,
@@ -19,8 +19,8 @@ class TaskEntity {
     this.endTime,
   });
 
-  factory TaskEntity.fromJson(Map<String, dynamic> json) {
-    return TaskEntity(
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
       id: json['id'],
       title: json['title'],
       description: json['description'],
