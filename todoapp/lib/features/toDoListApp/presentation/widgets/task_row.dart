@@ -16,111 +16,120 @@ class TaskRow extends StatelessWidget {
     required this.onDelete,
   }) : super(key: key);
 
+  // Helper function to scale sizes based on screen width (kept from original code)
+  double scale(double size, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return size * (screenWidth / 375);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    double scale(double size) => size * (screenWidth / 375);
+    // Define a modern color palette
+    const Color primaryColor = Color(0xFF4C7FFF); // A vibrant blue
+    const Color completedColor = Color(0xFF17D092); // A fresh green
+    const Color cardBgColor = Colors.white;
+    const Color shadowColor = Color(
+      0xFF3B5B9E,
+    ); // Shadow color based on primary
+    final Color textColor = isCompleted ? Colors.grey.shade600 : Colors.black87;
+    final Color subtitleColor = isCompleted
+        ? Colors.grey.shade400
+        : Colors.grey;
 
     return GestureDetector(
       onTap: onToggle,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isCompleted
-                ? [
-                    const Color(0xFF17D092).withOpacity(0.8),
-                    const Color(0xFF0B6E4F).withOpacity(0.9),
-                  ]
-                : [
-                    const Color(0xFF17D092).withOpacity(0.3),
-                    const Color(0xFF00C896).withOpacity(0.5),
-                  ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
+          color: cardBgColor,
+          borderRadius: BorderRadius.circular(12),
+          // Subtle border when not completed, a highlight when completed
+          border: isCompleted
+              ? Border.all(color: completedColor.withOpacity(0.5), width: 1.5)
+              : Border.all(color: Colors.grey.shade200, width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 12,
+              color: shadowColor.withOpacity(isCompleted ? 0.1 : 0.05),
+              blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isCompleted
-                    ? Colors.white.withOpacity(0.9)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.9),
-                  width: 2,
-                ),
-              ),
-              width: scale(28),
-              height: scale(28),
-              child: Icon(
-                isCompleted ? Icons.check : Icons.circle_outlined,
-                color: isCompleted
-                    ? const Color(0xFF17D092)
-                    : Colors.white.withOpacity(0.7),
-                size: scale(20),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: scale(16),
-                      fontFamily: 'preahvihear',
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      decoration: isCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    timeInterval,
-                    style: TextStyle(
-                      fontSize: scale(13),
-                      fontFamily: 'preahvihear',
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: onDelete,
-              child: Container(
-                padding: const EdgeInsets.all(6),
+        // Using ListTile structure for better alignment and standard design
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: Row(
+            children: [
+              // Modern Checkbox Indicator
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: scale(28, context),
+                height: scale(28, context),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.redAccent.withOpacity(0.15),
+                  color: isCompleted ? completedColor : Colors.transparent,
+                  border: Border.all(
+                    color: isCompleted
+                        ? completedColor
+                        : primaryColor.withOpacity(0.7),
+                    width: isCompleted ? 0 : 2,
+                  ),
                 ),
-                child: Icon(
-                  Icons.delete_outline,
-                  color: Colors.redAccent.withOpacity(0.7),
-                  size: scale(20),
+                child: Center(
+                  child: isCompleted
+                      ? const Icon(Icons.check, color: Colors.white, size: 18)
+                      : Container(), // Empty container when not checked
                 ),
               ),
-            ),
-          ],
+              const SizedBox(width: 16),
+
+              // Title and Time Interval
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: scale(16, context),
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        decorationColor: completedColor,
+                        decorationThickness: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      timeInterval,
+                      style: TextStyle(
+                        fontSize: scale(13, context),
+                        color: subtitleColor,
+                        // No font change to avoid external dependencies like 'preahvihear'
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Delete Button (onDelete logic remains the same)
+              GestureDetector(
+                onTap: onDelete,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent.withOpacity(0.7),
+                    size: scale(24, context),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

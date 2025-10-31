@@ -10,6 +10,7 @@ import 'package:todoapp/features/toDoListApp/data/datasources/tasks_local_dataso
 import 'package:todoapp/features/toDoListApp/data/repositories/taskrepositoryimpl.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/add_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/delete_task.dart';
+import 'package:todoapp/features/toDoListApp/domain/usecase/get_completed_tasks.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/get_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/update_task.dart';
 import 'package:todoapp/features/toDoListApp/presentation/navigation.dart';
@@ -58,9 +59,11 @@ class MyApp extends StatelessWidget {
             getTasks: GetTasks(taskRepository: taskRepository),
             updateTask: UpdateTask(taskRepository: taskRepository),
             deleteTask: DeleteTask(taskRepository: taskRepository),
+            getCompletedTasks: GetCompletedTasks(
+              taskRepository: taskRepository,
+            ),
           ),
         ),
-        // Add more providers here as needed
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

@@ -12,6 +12,8 @@ abstract class TaskRemoteDatasource {
   Future<Either<Failure, void>> deleteTask(String taskId);
 
   Future<Either<Failure, List<TaskEntity>>> getTasks();
+
+  Future<Either<Failure, List<TaskEntity>>> getCompletedTasks();
 }
 
 class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
@@ -74,6 +76,36 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
       return Right(tasks);
     } catch (e) {
       print('❌ Remote fetch error: $e');
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<TaskEntity>>> getCompletedTasks() async {
+    try {
+      final snapshot = await firebase.tasksCollection
+          .where('isCompleted', isEqualTo: true)
+          .get();
+
+      final tasks = snapshot.docs.map((doc) {
+        final rawData = doc.data();
+        if (rawData is Map<String, dynamic>) {
+          // ✅ Safe spread (non-null)
+          return TaskEntity.fromJson({...rawData, 'id': doc.id});
+        } else {
+          // 🚫 Handle unexpected Firestore structure gracefully
+          return TaskEntity(
+            id: doc.id,
+            title: '',
+            description: '',
+            isCompleted: false,
+            createdAt: DateTime.now(),
+          );
+        }
+      }).toList();
+
+      return Right(tasks);
+    } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
   }

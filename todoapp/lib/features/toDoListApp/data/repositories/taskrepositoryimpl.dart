@@ -80,4 +80,25 @@ class TaskRepositoryImpl implements TaskRepository {
       return Left(NetworkFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, List<TaskEntity>>> getCompletedTasks() async {
+    try {
+      if (await networkInfo.isConnected) {
+        final remoteResult = await remoteDataSource.getCompletedTasks();
+
+        return await remoteResult.fold((failure) async => Left(failure), (
+          tasks,
+        ) async {
+          await localDataSource.cacheTasks(tasks);
+          return Right(tasks);
+        });
+      } else {
+        final localResult = await localDataSource.getCachedTasks();
+        return localResult;
+      }
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

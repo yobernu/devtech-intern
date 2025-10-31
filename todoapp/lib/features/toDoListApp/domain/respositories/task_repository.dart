@@ -10,4 +10,5 @@ abstract class TaskRepository {
   Future<Either<Failure, void>> deleteTask(String taskId);
 
   Future<Either<Failure, List<TaskEntity>>> getTasks();
+  Future<Either<Failure, List<TaskEntity>>> getCompletedTasks();
 }

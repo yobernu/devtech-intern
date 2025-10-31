@@ -3,6 +3,7 @@ import 'package:todoapp/core/errors/failures.dart';
 import 'package:todoapp/core/usecases.dart';
 import 'package:todoapp/features/toDoListApp/domain/entity/task_entity.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/add_task.dart';
+import 'package:todoapp/features/toDoListApp/domain/usecase/get_completed_tasks.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/get_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/update_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/delete_task.dart';
@@ -12,17 +13,20 @@ class TaskProvider extends ChangeNotifier {
   final GetTasks getTasks;
   final UpdateTask updateTask;
   final DeleteTask deleteTask;
+  final GetCompletedTasks getCompletedTasks;
 
   TaskProvider({
     required this.addTask,
     required this.getTasks,
     required this.updateTask,
     required this.deleteTask,
+    required this.getCompletedTasks,
   });
 
   bool isLoading = false;
   String? errorMessage;
   List<TaskEntity> tasks = [];
+  List<TaskEntity> completedTasks = [];
 
   // CREATE
   Future<void> createTask(TaskEntity task) async {
@@ -64,6 +68,32 @@ class TaskProvider extends ChangeNotifier {
     );
 
     _setLoading(false);
+  }
+
+  // Fetch completed tasks
+  Future<void> fetchCompletedTasks() async {
+    _setLoading(true);
+    try {
+      final result = await getCompletedTasks(NoParams());
+
+      result.fold(
+        (Failure failure) {
+          _setError(failure.toString());
+          completedTasks = [];
+        },
+        (List<TaskEntity> fetchedTasks) {
+          completedTasks = fetchedTasks;
+          debugPrint('✅ Fetched ${completedTasks.length} tasks');
+          if (completedTasks.isNotEmpty) {
+            debugPrint('📝 First task: ${completedTasks.first.title}');
+          }
+        },
+      );
+    } catch (e) {
+      _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
   }
 
   // UPDATE
