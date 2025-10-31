@@ -17,9 +17,9 @@ class HomeScreen extends StatelessWidget {
           children: [
             SearchBox(),
             SizedBox(height: 32.0),
-            TaskRow(key: key, title: 'Task 1', timeInterval: '12:00 PM'),
-            TaskRow(key: key, title: 'Task 2', timeInterval: '12:00 PM'),
-            TaskRow(key: key, title: 'Task 3', timeInterval: '12:00 PM'),
+            // TaskRow(key: key, title: 'Task 1', timeInterval: '12:00 PM'),
+            // TaskRow(key: key, title: 'Task 2', timeInterval: '12:00 PM'),
+            // TaskRow(key: key, title: 'Task 3', timeInterval: '12:00 PM'),
           ],
         ),
       ),

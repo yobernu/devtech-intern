@@ -2,19 +2,27 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  const CustomAppBar({Key? key, required this.title}) : super(key: key);
+  final VoidCallback? onMenuPressed;
+  const CustomAppBar({Key? key, required this.title, this.onMenuPressed})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       leading: Padding(
         padding: const EdgeInsets.fromLTRB(32.0, 0, 0, 0),
-        child: Icon(Icons.menu_open),
+        child: IconButton(
+          icon: Icon(Icons.menu_open),
+          onPressed: onMenuPressed,
+        ),
       ),
-      backgroundColor: Color(0xFF466A5E),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       title: Padding(
         padding: const EdgeInsets.fromLTRB(32.0, 0, 32.0, 0),
-        child: Text(title),
+        child: Text(
+          title,
+          style: TextStyle(fontFamily: 'preahvihear', color: Colors.black),
+        ),
       ),
     );
   }

@@ -67,7 +67,27 @@ class MyApp extends StatelessWidget {
         title: 'Todo App',
         initialRoute: AppRoutes.home,
         routes: AppRoutes.routes,
-        theme: ThemeData(primarySwatch: Colors.teal),
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+          fontFamily: 'preahvihear',
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(fontFamily: 'preahvihear'),
+            displayMedium: TextStyle(fontFamily: 'preahvihear'),
+            displaySmall: TextStyle(fontFamily: 'preahvihear'),
+            headlineMedium: TextStyle(fontFamily: 'preahvihear'),
+            headlineSmall: TextStyle(fontFamily: 'preahvihear'),
+            titleLarge: TextStyle(fontFamily: 'preahvihear'),
+            titleMedium: TextStyle(fontFamily: 'preahvihear'),
+            titleSmall: TextStyle(fontFamily: 'preahvihear'),
+            bodyLarge: TextStyle(fontFamily: 'preahvihear'),
+            bodyMedium: TextStyle(fontFamily: 'preahvihear'),
+            bodySmall: TextStyle(fontFamily: 'preahvihear'),
+            labelLarge: TextStyle(fontFamily: 'preahvihear'),
+            labelMedium: TextStyle(fontFamily: 'preahvihear'),
+            labelSmall: TextStyle(fontFamily: 'preahvihear'),
+          ),
+        ),
       ),
     );
   }

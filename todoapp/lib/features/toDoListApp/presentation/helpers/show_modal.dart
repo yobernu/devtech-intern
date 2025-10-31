@@ -102,30 +102,102 @@ void showModal(BuildContext context) {
                 CustomButton(
                   title: 'Add Task',
                   prefIcon: const Icon(Icons.add),
-                  onPress: () {
-                    if (selectedStartDateTime == null || selectedEndDateTime == null) {
-                      ScaffoldMessenger.of(modalContext).showSnackBar(
-                        const SnackBar(content: Text('Please select both start and end times')),
-                      );
+                  onPress: () async {
+                    if (titleController.text.trim().isEmpty) {
+                      if (modalContext.mounted) {
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a task title'),
+                          ),
+                        );
+                      }
                       return;
                     }
-                    
+
+                    if (selectedStartDateTime == null ||
+                        selectedEndDateTime == null) {
+                      if (modalContext.mounted) {
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Please select both start and end times',
+                            ),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
+                    if (selectedStartDateTime!.isAfter(selectedEndDateTime!)) {
+                      if (modalContext.mounted) {
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('Start time must be before end time'),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
                     final task = TaskEntity(
                       id: UniqueKey().toString(),
-                      title: titleController.text,
-                      description: descriptionController.text,
+                      title: titleController.text.trim(),
+                      description: descriptionController.text.trim(),
                       isCompleted: false,
                       createdAt: DateTime.now(),
                       startTime: selectedStartDateTime!,
                       endTime: selectedEndDateTime!,
                     );
 
-                    final provider = Provider.of<TaskProvider>(
-                      modalContext,
-                      listen: false,
-                    );
-                    provider.createTask(task);
-                    Navigator.pop(modalContext);
+                    try {
+                      final provider = Provider.of<TaskProvider>(
+                        modalContext,
+                        listen: false,
+                      );
+
+                      // Show loading state
+                      final scaffold = ScaffoldMessenger.of(modalContext);
+                      final navigator = Navigator.of(modalContext);
+
+                      // Show loading dialog
+                      showDialog(
+                        context: modalContext,
+                        barrierDismissible: false,
+                        builder: (context) =>
+                            const Center(child: CircularProgressIndicator()),
+                      );
+
+                      // Wait for task creation to complete
+                      await provider.createTask(task);
+
+                      // Close loading dialog and modal
+                      if (modalContext.mounted) {
+                        navigator.pop(); // Close loading dialog
+                        navigator.pop(); // Close modal
+
+                        // Show success message
+                        scaffold.showSnackBar(
+                          const SnackBar(
+                            content: Text('Task created successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (modalContext.mounted) {
+                        Navigator.of(
+                          modalContext,
+                        ).pop(); // Close loading dialog
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Failed to create task: ${e.toString()}',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   },
                 ),
               ],

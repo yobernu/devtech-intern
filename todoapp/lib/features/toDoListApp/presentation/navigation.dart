@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:todoapp/features/toDoListApp/presentation/screens/add_task.dart';
+import 'package:todoapp/features/toDoListApp/presentation/screens/completed_tasks_screen.dart';
 import 'package:todoapp/features/toDoListApp/presentation/screens/task_list_screen.dart';
 
 class AppRoutes {

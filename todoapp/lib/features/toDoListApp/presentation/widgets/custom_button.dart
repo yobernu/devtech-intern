@@ -70,7 +70,15 @@ class CustomButton extends StatelessWidget {
               children: [
                 prefIcon,
                 const SizedBox(width: 8),
-                Text(title, style: const TextStyle(color: Colors.white)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontFamily: 'preahvihear',
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
               ],
             ),
           ),

@@ -49,6 +49,7 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
     }
   }
 
+  @override
   Future<Either<Failure, List<TaskEntity>>> getTasks() async {
     try {
       final snapshot = await firebase.tasksCollection.get();

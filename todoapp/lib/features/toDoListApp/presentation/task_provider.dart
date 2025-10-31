@@ -26,91 +26,87 @@ class TaskProvider extends ChangeNotifier {
 
   // CREATE
   Future<void> createTask(TaskEntity task) async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
-
+    _setLoading(true);
     final result = await addTask(AddTaskParams(task: task));
 
-    result.fold((Failure failure) => errorMessage = failure.toString(), (
-      _,
-    ) async {
-      debugPrint('Task created successfully');
-      await fetchTasks();
-    });
+    result.fold(
+      (Failure failure) {
+        _setError(failure.toString());
+      },
+      (_) async {
+        debugPrint('✅ Task created successfully');
+        await fetchTasks();
+      },
+    );
 
-    isLoading = false;
-    notifyListeners();
+    _setLoading(false);
   }
 
   // FETCH
   Future<void> fetchTasks() async {
-    try {
-      print('Fetching tasks...');
-      isLoading = true;
-      errorMessage = null;
-      notifyListeners();
+    _setLoading(true);
+    debugPrint('📥 Fetching tasks...');
 
-      final result = await getTasks(NoParams());
-      print('Received result from getTasks: $result');
+    final result = await getTasks(NoParams());
 
-      result.fold(
-        (Failure failure) {
-          print('Error fetching tasks: ${failure.toString()}');
-          errorMessage = failure.toString();
-          tasks = [];
-        },
-        (List<TaskEntity> fetchedTasks) {
-          print('Successfully fetched ${fetchedTasks.length} tasks');
-          tasks = fetchedTasks;
-          if (tasks.isNotEmpty) {
-            print('First task: ${tasks.first.title}');
-          }
-        },
-      );
-    } catch (e) {
-      errorMessage = e.toString();
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
+    result.fold(
+      (Failure failure) {
+        _setError(failure.toString());
+        tasks = [];
+      },
+      (List<TaskEntity> fetchedTasks) {
+        tasks = fetchedTasks;
+        debugPrint('✅ Fetched ${tasks.length} tasks');
+        if (tasks.isNotEmpty) {
+          debugPrint('📝 First task: ${tasks.first.title}');
+        }
+      },
+    );
+
+    _setLoading(false);
   }
 
   // UPDATE
   Future<void> updateTaskItem(TaskEntity updatedTask) async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    _setLoading(true);
 
     final result = await updateTask(UpdateTaskParams(task: updatedTask));
 
-    result.fold((Failure failure) => errorMessage = failure.toString(), (
-      _,
-    ) async {
-      debugPrint('Task updated successfully');
+    result.fold((Failure failure) => _setError(failure.toString()), (_) async {
+      debugPrint('🔁 Task updated successfully');
       await fetchTasks();
     });
 
-    isLoading = false;
-    notifyListeners();
+    _setLoading(false);
   }
 
   // DELETE
   Future<void> deleteTaskItem(String taskId) async {
-    isLoading = true;
-    errorMessage = null;
-    notifyListeners();
+    _setLoading(true);
 
     final result = await deleteTask(DeleteTaskParams(taskId: taskId));
 
-    result.fold((Failure failure) => errorMessage = failure.toString(), (
-      _,
-    ) async {
-      debugPrint('Task deleted successfully');
+    result.fold((Failure failure) => _setError(failure.toString()), (_) async {
+      debugPrint('🗑️ Task deleted successfully');
       await fetchTasks();
     });
 
-    isLoading = false;
+    _setLoading(false);
+  }
+
+  // Helper methods
+  void _setLoading(bool value) {
+    isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String message) {
+    errorMessage = message;
+    debugPrint('❌ Error: $message');
     notifyListeners();
   }
 }
+
+// Future<void> clearError() async {
+//   await errorMessage = "";
+// }

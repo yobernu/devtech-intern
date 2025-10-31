@@ -19,6 +19,28 @@ class TaskEntity {
     this.endTime,
   });
 
+  TaskEntity copyWith({
+    String? id,
+    String? title,
+    String? description,
+    bool? isCompleted,
+    DateTime? startTime,
+    DateTime? endTime,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return TaskEntity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      isCompleted: isCompleted ?? this.isCompleted,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory TaskEntity.fromJson(Map<String, dynamic> json) {
     return TaskEntity(
       id: json['id'],
