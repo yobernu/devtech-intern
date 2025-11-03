@@ -47,8 +47,7 @@ class _TaskListState extends State<TaskList> {
                 context,
                 listen: false,
               ).updateTask(UpdateTaskParams(task: updatedTask));
-
-              Future.delayed(Duration(seconds: 3), refreshData);
+              refreshData();
             },
             onDelete: () {
               final taskId = widget.tasks[index].id;
@@ -59,14 +58,23 @@ class _TaskListState extends State<TaskList> {
                 context,
                 listen: false,
               ).deleteTask(DeleteTaskParams(taskId: taskId));
+              refreshData();
             },
             title: widget.tasks[index].title,
-            timeInterval: widget.tasks[index].isCompleted
-                ? ''
-                : '${widget.tasks[index].startTime.toString().substring(11, 16)} - ${widget.tasks[index].endTime.toString().substring(11, 16)}',
+            timeInterval:
+                (widget.tasks[index].startTime != null &&
+                    widget.tasks[index].endTime != null &&
+                    !widget.tasks[index].isCompleted)
+                ?
+                  // IF TRUE (Times exist and task is active): Format the time string
+                  '${widget.tasks[index].startTime.toString().substring(11, 16)} - ${widget.tasks[index].endTime.toString().substring(11, 16)}'
+                : '',
           );
         },
       ),
     );
   }
 }
+
+
+// duration

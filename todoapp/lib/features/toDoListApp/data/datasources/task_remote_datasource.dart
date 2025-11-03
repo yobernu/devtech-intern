@@ -62,7 +62,6 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
           // ✅ Safe spread (non-null)
           return TaskEntity.fromJson({...rawData, 'id': doc.id});
         } else {
-          // 🚫 Handle unexpected Firestore structure gracefully
           return TaskEntity(
             id: doc.id,
             title: '',
@@ -93,7 +92,6 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
           // ✅ Safe spread (non-null)
           return TaskEntity.fromJson({...rawData, 'id': doc.id});
         } else {
-          // 🚫 Handle unexpected Firestore structure gracefully
           return TaskEntity(
             id: doc.id,
             title: '',

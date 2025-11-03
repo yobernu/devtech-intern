@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:provider/provider.dart';
 import 'package:todoapp/features/toDoListApp/presentation/helpers/task_list.dart';
-import 'package:todoapp/features/toDoListApp/presentation/navigation.dart';
 import 'package:todoapp/features/toDoListApp/presentation/screens/drawer_screen.dart';
 import 'package:todoapp/features/toDoListApp/presentation/task_provider.dart';
 import 'package:todoapp/features/toDoListApp/presentation/helpers/show_modal.dart';
@@ -39,9 +39,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 }
 
-// =======================================================
-// ✅ Main Screen (Tasks, AppBar, etc.)
-// =======================================================
 class MainTaskScreen extends StatefulWidget {
   final VoidCallback onMenuPressed;
   const MainTaskScreen({required this.onMenuPressed, super.key});
@@ -51,102 +48,167 @@ class MainTaskScreen extends StatefulWidget {
 }
 
 class _MainTaskScreenState extends State<MainTaskScreen> {
-  Future<void> refreshData() async {
-    try {
-      await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
-    } catch (error) {
-      print('Refresh error: $error');
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+      _loadInitialTasks();
     });
+  }
+
+  Future<void> _loadInitialTasks() async {
+    try {
+      EasyLoading.show(status: 'Loading your tasks...');
+      await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+      EasyLoading.dismiss();
+    } catch (error) {
+      EasyLoading.showError('Failed to load tasks');
+    }
+  }
+
+  Future<void> refreshData() async {
+    try {
+      await Provider.of<TaskProvider>(context, listen: false).fetchTasks();
+    } catch (error) {
+      EasyLoading.showError('Refresh failed');
+    }
+  }
+
+  void _handleError(String? errorMessage) {
+    if (errorMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<TaskProvider>(
+      builder: (context, taskProvider, _) {
+        if (taskProvider.errorMessage != null) {
+          _handleError(taskProvider.errorMessage);
+          // taskProvider.clearError();
+        }
+
+        final waitingTasks = taskProvider.tasks
+            .where((task) => !task.isCompleted)
+            .toList();
+
+        if (taskProvider.tasks.isEmpty && !taskProvider.isLoading) {
+          return _buildScaffold(body: const Newuser(), showFAB: true);
+        }
+
+        return _buildScaffold(
+          body: RefreshIndicator(
+            onRefresh: refreshData,
+            child: Column(
+              children: [
+                const SearchBox(),
+                Expanded(
+                  child: waitingTasks.isEmpty && !taskProvider.isLoading
+                      ? _buildNoPendingTasks()
+                      : ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: waitingTasks.length,
+                          itemBuilder: (context, index) {
+                            return TaskList(tasks: [waitingTasks[index]]);
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+          showFAB: true,
+        );
+      },
+    );
+  }
+
+  Widget _buildScaffold({required Widget body, required bool showFAB}) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: const Color(0xFF466A5E),
         title: const Text(
           'Simple To-Do App',
-          style: TextStyle(fontFamily: 'preahvihear'),
+          style: TextStyle(
+            fontFamily: 'preahvihear',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.white,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.menu, color: Colors.white),
           onPressed: widget.onMenuPressed,
         ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Consumer<TaskProvider>(
-        builder: (context, taskProvider, _) {
-          final waitingTasks = taskProvider.tasks
-              .where((task) => !task.isCompleted)
-              .toList();
-          final completedTasks = taskProvider.tasks
-              .where((task) => task.isCompleted)
-              .toList();
-          if (taskProvider.errorMessage != null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(taskProvider.errorMessage!),
-                  backgroundColor: Colors.red,
-                ),
-              );
-              taskProvider.errorMessage = null;
-            });
-          }
+      body: body,
+      floatingActionButton: showFAB
+          ? FloatingActionButton(
+              onPressed: () => _showAddTaskModal(context),
+              backgroundColor: const Color(0xFF466A5E),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            )
+          : null,
+    );
+  }
 
-          if (taskProvider.isLoading && taskProvider.tasks.isEmpty) {
-            return Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFFFFFFFF), Color(0xFF37584E)],
-                  begin: Alignment.bottomLeft,
-                  end: Alignment.topRight,
-                ),
-              ),
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (taskProvider.tasks.isEmpty) {
-            return const Newuser();
-          }
-
-          return RefreshIndicator(
-            onRefresh: refreshData,
-            child: Column(
-              children: [
-                const SearchBox(),
-                Expanded(
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: waitingTasks.length,
-                    itemBuilder: (context, index) {
-                      return TaskList(tasks: [waitingTasks[index]]);
-                    },
-                  ),
-                ),
-              ],
+  Widget _buildNoPendingTasks() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 80,
+              color: const Color(0xFF466A5E).withOpacity(0.7),
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showModal(context),
-        backgroundColor: const Color(0xFF466A5E),
-        child: const Icon(Icons.add, color: Colors.white),
+            const SizedBox(height: 20),
+            Text(
+              'All tasks completed!',
+              style: TextStyle(
+                fontFamily: 'preahvihear',
+                fontSize: 20,
+                color: const Color(0xFF466A5E),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Add new tasks using the + button below',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'preahvihear',
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  void _showAddTaskModal(BuildContext context) {
+    try {
+      showModal(context);
+    } catch (error) {
+      EasyLoading.showError('Failed to open task form');
+    }
   }
 }
 
 
-
-// completed
+// overlay

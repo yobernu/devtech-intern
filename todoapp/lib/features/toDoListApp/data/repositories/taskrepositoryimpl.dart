@@ -20,29 +20,43 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<Either<Failure, void>> addTask(TaskEntity task) async {
     try {
+      await localDataSource.addOrUpdateTask(task);
+
       if (await networkInfo.isConnected) {
-        await remoteDataSource.addTask(task);
-        await localDataSource.cacheTasks([task]);
+        try {
+          await remoteDataSource.addTask(task);
+          await _markTaskAsSynced(task.id);
+        } catch (e) {
+          await _markTaskForSync(task);
+        }
       } else {
-        await localDataSource.cacheTasks([task]);
+        await _markTaskForSync(task);
       }
+
       return const Right(null);
     } catch (e) {
-      return Left(NetworkFailure());
+      return Left(CacheFailure());
     }
   }
 
   @override
   Future<Either<Failure, void>> deleteTask(String taskId) async {
     try {
+      await localDataSource.deleteTask(taskId);
+
       if (await networkInfo.isConnected) {
-        await remoteDataSource.deleteTask(taskId);
+        try {
+          await remoteDataSource.deleteTask(taskId);
+        } catch (e) {
+          await _markDeletionForSync(taskId);
+        }
       } else {
-        await localDataSource.deleteCachedTask(taskId);
+        await _markDeletionForSync(taskId);
       }
+
       return const Right(null);
     } catch (e) {
-      return Left(NetworkFailure());
+      return Left(CacheFailure());
     }
   }
 
@@ -51,54 +65,128 @@ class TaskRepositoryImpl implements TaskRepository {
     try {
       if (await networkInfo.isConnected) {
         final remoteResult = await remoteDataSource.getTasks();
-
-        return await remoteResult.fold((failure) async => Left(failure), (
-          tasks,
-        ) async {
-          await localDataSource.cacheTasks(tasks);
-          return Right(tasks);
-        });
+        return await remoteResult.fold(
+          (failure) async {
+            final localTasks = await localDataSource.getCachedTasks();
+            return Right(localTasks);
+          },
+          (tasks) async {
+            await localDataSource.cacheAllTasks(tasks);
+            return Right(tasks);
+          },
+        );
       } else {
-        final localResult = await localDataSource.getCachedTasks();
-        return localResult;
+        final localTasks = await localDataSource.getCachedTasks();
+        return Right(localTasks);
       }
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      try {
+        final localTasks = await localDataSource.getCachedTasks();
+        return Right(localTasks);
+      } catch (cacheError) {
+        return Left(CacheFailure());
+      }
     }
   }
 
   @override
   Future<Either<Failure, void>> updateTask(TaskEntity task) async {
     try {
+      await localDataSource.addOrUpdateTask(task);
+
       if (await networkInfo.isConnected) {
-        await remoteDataSource.updateTask(task);
+        try {
+          await remoteDataSource.updateTask(task);
+          await _markTaskAsSynced(task.id);
+        } catch (e) {
+          await _markTaskForSync(task);
+        }
       } else {
-        await localDataSource.updateCachedTask(task);
+        await _markTaskForSync(task);
       }
+
       return const Right(null);
     } catch (e) {
-      return Left(NetworkFailure());
+      return Left(CacheFailure());
     }
   }
 
   @override
   Future<Either<Failure, List<TaskEntity>>> getCompletedTasks() async {
     try {
-      if (await networkInfo.isConnected) {
-        final remoteResult = await remoteDataSource.getCompletedTasks();
-
-        return await remoteResult.fold((failure) async => Left(failure), (
-          tasks,
-        ) async {
-          await localDataSource.cacheTasks(tasks);
-          return Right(tasks);
-        });
-      } else {
-        final localResult = await localDataSource.getCachedTasks();
-        return localResult;
-      }
+      final allTasks = await getTasks();
+      return allTasks.fold((failure) => Left(failure), (tasks) {
+        final completedTasks = tasks.where((task) => task.isCompleted).toList();
+        return Right(completedTasks);
+      });
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(CacheFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<TaskEntity>>> getPendingTasks() async {
+    try {
+      final allTasks = await getTasks();
+      return allTasks.fold((failure) => Left(failure), (tasks) {
+        final pendingTasks = tasks.where((task) => !task.isCompleted).toList();
+        return Right(pendingTasks);
+      });
+    } catch (e) {
+      return Left(CacheFailure());
+    }
+  }
+
+  Future<void> _markTaskForSync(TaskEntity task) async {
+    try {
+      final taskWithSyncFlag = task.copyWith();
+      await localDataSource.addOrUpdateTask(taskWithSyncFlag);
+    } catch (e) {
+      print('Failed to mark task for sync: $e');
+    }
+  }
+
+  Future<void> _markTaskAsSynced(String taskId) async {
+    try {
+      final tasks = await localDataSource.getCachedTasks();
+      final task = tasks.firstWhere((t) => t.id == taskId);
+      final syncedTask = task.copyWith();
+      await localDataSource.addOrUpdateTask(syncedTask);
+    } catch (e) {
+      print('Failed to mark task as synced: $e');
+    }
+  }
+
+  Future<void> _markDeletionForSync(String taskId) async {
+    try {} catch (e) {
+      print('Failed to mark deletion for sync: $e');
+    }
+  }
+
+  Future<void> syncPendingTasks() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final pendingTasks = await localDataSource.getPendingSyncTasks();
+        for (final task in pendingTasks) {
+          try {
+            await remoteDataSource.addTask(task);
+            await _markTaskAsSynced(task.id);
+          } catch (e) {
+            print('Failed to sync task ${task.id}: $e');
+          }
+        }
+      } catch (e) {
+        print('Background sync failed: $e');
+      }
+    }
+  }
+
+  Future<Either<Failure, void>> clearCache() async {
+    try {
+      await localDataSource.clearCache();
+      return const Right(null);
+    } catch (e) {
+      return Left(CacheFailure());
     }
   }
 }

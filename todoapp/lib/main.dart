@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:todoapp/core/constants/firebase_services.dart';
@@ -19,6 +20,8 @@ import 'package:todoapp/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase
   if (kIsWeb) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -27,7 +30,25 @@ void main() async {
     await Firebase.initializeApp();
   }
 
+  _configureEasyLoading();
+
   runApp(const MyApp());
+}
+
+void _configureEasyLoading() {
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 2000)
+    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+    ..loadingStyle = EasyLoadingStyle.custom
+    ..indicatorSize = 45.0
+    ..radius = 10.0
+    ..maskColor = Colors.blue.withOpacity(0.5)
+    ..userInteractions = true
+    ..dismissOnTap = false
+    ..backgroundColor = Colors.teal[200]
+    ..indicatorColor = Colors.black
+    ..textColor = Colors.black
+    ..maskColor = Colors.black.withValues(alpha: 0.5);
 }
 
 class MyApp extends StatelessWidget {
@@ -70,6 +91,7 @@ class MyApp extends StatelessWidget {
         title: 'Todo App',
         initialRoute: AppRoutes.home,
         routes: AppRoutes.routes,
+        builder: EasyLoading.init(),
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,

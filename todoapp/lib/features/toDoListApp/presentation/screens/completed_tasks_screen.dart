@@ -8,6 +8,7 @@ import 'package:todoapp/features/toDoListApp/presentation/screens/task_list_scre
 import 'package:todoapp/features/toDoListApp/presentation/task_provider.dart';
 import 'package:todoapp/features/toDoListApp/presentation/widgets/task_row.dart';
 
+// update
 class CompletedTasksScreen extends StatefulWidget {
   const CompletedTasksScreen({Key? key}) : super(key: key);
 
@@ -47,13 +48,17 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
   Future<void> _handleToggleTask(TaskEntity task) async {
     try {
       final updatedTask = task.copyWith(isCompleted: !task.isCompleted);
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
-      await Provider.of<TaskProvider>(
-        context,
-        listen: false,
-      ).updateTask(UpdateTaskParams(task: updatedTask));
+      // Update the task
+      await taskProvider.updateTaskItem(updatedTask);
 
-      await _refreshTasks();
+      // Refresh both tasks and completed tasks
+      await Future.wait([
+        taskProvider.fetchTasks(),
+        taskProvider.fetchCompletedTasks(),
+      ]);
+
       _showSuccessSnackBar('Task updated successfully');
     } catch (error) {
       _showErrorSnackBar('Failed to update task: $error');
@@ -62,13 +67,17 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
 
   Future<void> _handleDeleteTask(TaskEntity task, int index) async {
     try {
-      final taskId = task.id;
-      await Provider.of<TaskProvider>(
-        context,
-        listen: false,
-      ).deleteTask(DeleteTaskParams(taskId: taskId));
+      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
 
-      await _refreshTasks();
+      // Delete the task
+      await taskProvider.deleteTaskItem(task.id);
+
+      // Refresh both tasks and completed tasks
+      await Future.wait([
+        taskProvider.fetchTasks(),
+        taskProvider.fetchCompletedTasks(),
+      ]);
+
       _showSuccessSnackBar('Task deleted successfully');
     } catch (error) {
       _showErrorSnackBar('Failed to delete task: $error');
@@ -109,16 +118,16 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
       ),
       body: Consumer<TaskProvider>(
         builder: (context, taskProvider, _) {
+          // Get completed tasks here
+          final completedTasks = taskProvider.completedTasks;
+
           if (taskProvider.isLoading) {
             return _buildGradientBackground(
               child: const Center(child: CircularProgressIndicator()),
             );
           }
 
-          final completedTasks = taskProvider.tasks
-              .where((task) => task.isCompleted)
-              .toList();
-
+          // Check if we have any completed tasks
           if (completedTasks.isEmpty) {
             return _buildEmptyState();
           }
@@ -133,7 +142,7 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
                   itemBuilder: (context, index) {
                     final task = completedTasks[index];
                     return TaskRow(
-                      key: ValueKey(task.id), // Add key for better performance
+                      key: ValueKey(task.id),
                       title: task.title,
                       timeInterval: task.endTime != null
                           ? 'Ends: ${_formatDateTime(task.endTime!)}'
