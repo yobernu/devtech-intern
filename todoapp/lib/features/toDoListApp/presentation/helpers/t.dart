@@ -28,6 +28,7 @@ class _TaskListState extends State<TaskList> {
           : task.category.trim());
       final displayName =
           '${categoryName[0].toUpperCase()}${categoryName.substring(1).toLowerCase()}';
+
       map.putIfAbsent(displayName, () => []).add(task);
       return map;
     });
@@ -56,7 +57,7 @@ class _TaskListState extends State<TaskList> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: Text('...'));
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_error != null) {
@@ -94,9 +95,8 @@ class _TaskListState extends State<TaskList> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Horizontal category list
+          // Horizontal category chips
           SizedBox(
             height: 50,
             child: ListView.separated(
@@ -142,40 +142,68 @@ class _TaskListState extends State<TaskList> {
               },
             ),
           ),
+
+          const SizedBox(height: 16),
+
+          // Category header
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              categories[selectedCategoryIndex],
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+
           const SizedBox(height: 12),
 
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: tasksInCategory.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final task = tasksInCategory[index];
-              return TaskRow(
-                title: task.title,
-                timeInterval: (task.startTime != null && task.endTime != null)
-                    ? '${task.startTime.toString().substring(11, 16)} - ${task.endTime.toString().substring(11, 16)}'
-                    : '',
-                isCompleted: task.isCompleted,
-                onToggle: () {
-                  final updatedTask = task.copyWith(
-                    isCompleted: !task.isCompleted,
-                  );
-                  Provider.of<TaskProvider>(
-                    context,
-                    listen: false,
-                  ).updateTask(UpdateTaskParams(task: updatedTask));
-                  refreshData();
-                },
-                onDelete: () {
-                  Provider.of<TaskProvider>(
-                    context,
-                    listen: false,
-                  ).deleteTask(DeleteTaskParams(taskId: task.id));
-                  refreshData();
-                },
-              );
-            },
+          // Scrollable task list
+          Expanded(
+            child: tasksInCategory.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No tasks in this category',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: refreshData,
+                    child: ListView.separated(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: tasksInCategory.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final task = tasksInCategory[index];
+                        return TaskRow(
+                          title: task.title,
+                          timeInterval:
+                              (task.startTime != null && task.endTime != null)
+                              ? '${task.startTime.toString().substring(11, 16)} - ${task.endTime.toString().substring(11, 16)}'
+                              : '',
+                          isCompleted: task.isCompleted,
+                          onToggle: () {
+                            final updatedTask = task.copyWith(
+                              isCompleted: !task.isCompleted,
+                            );
+                            Provider.of<TaskProvider>(
+                              context,
+                              listen: false,
+                            ).updateTask(UpdateTaskParams(task: updatedTask));
+                            refreshData();
+                          },
+                          onDelete: () {
+                            Provider.of<TaskProvider>(
+                              context,
+                              listen: false,
+                            ).deleteTask(DeleteTaskParams(taskId: task.id));
+                            refreshData();
+                          },
+                        );
+                      },
+                    ),
+                  ),
           ),
         ],
       ),

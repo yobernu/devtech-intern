@@ -7,6 +7,7 @@ class TaskModel {
   final DateTime? endTime;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final String category;
 
   TaskModel({
     required this.id,
@@ -17,6 +18,7 @@ class TaskModel {
     this.updatedAt,
     this.startTime,
     this.endTime,
+    required this.category,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class TaskModel {
           ? DateTime.parse(json['startTime'])
           : null,
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
+      category: json['category'],
     );
   }
 
@@ -46,6 +49,7 @@ class TaskModel {
       'updatedAt': updatedAt?.toIso8601String(),
       'startTime': startTime?.toIso8601String(),
       'endTime': endTime?.toIso8601String(),
+      'category': category,
     };
   }
 
@@ -59,5 +63,6 @@ class TaskModel {
     updatedAt,
     startTime,
     endTime,
+    category,
   ];
 }

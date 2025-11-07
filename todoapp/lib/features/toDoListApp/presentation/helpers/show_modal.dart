@@ -11,9 +11,12 @@ import 'package:todoapp/features/toDoListApp/presentation/widgets/custom_button.
 void showModal(BuildContext context) {
   TextEditingController titleController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  // 1. Declare new controller for category
+  TextEditingController categoryController = TextEditingController();
   List<PickerDateRange> selectedRanges = [];
   DateTime? selectedStartDateTime;
   DateTime? selectedEndDateTime;
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -24,7 +27,12 @@ void showModal(BuildContext context) {
       return ChangeNotifierProvider.value(
         value: Provider.of<TaskProvider>(context, listen: false),
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.only(
+            top: 24.0,
+            left: 24.0,
+            right: 24.0,
+            bottom: MediaQuery.of(modalContext).viewInsets.bottom + 24.0,
+          ), // Adjusted padding for keyboard
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -43,6 +51,12 @@ void showModal(BuildContext context) {
                   controller: descriptionController,
                   label: 'Task Description',
                   icon: const Icon(Icons.description),
+                ),
+                // 2. Add the Category Input Widget
+                TitleInput(
+                  controller: categoryController,
+                  label: 'Task Category',
+                  icon: const Icon(Icons.category),
                 ),
                 const SizedBox(height: 16),
                 Row(
@@ -114,6 +128,18 @@ void showModal(BuildContext context) {
                       return;
                     }
 
+                    // New Category Validation Check
+                    if (categoryController.text.trim().isEmpty) {
+                      if (modalContext.mounted) {
+                        ScaffoldMessenger.of(modalContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter a task category'),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+
                     if (selectedStartDateTime == null ||
                         selectedEndDateTime == null) {
                       if (modalContext.mounted) {
@@ -147,6 +173,8 @@ void showModal(BuildContext context) {
                       createdAt: DateTime.now(),
                       startTime: selectedStartDateTime!,
                       endTime: selectedEndDateTime!,
+                      // 3. Update the category field to use the controller
+                      category: categoryController.text.trim(),
                     );
 
                     try {

@@ -68,6 +68,7 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
             description: '',
             isCompleted: false,
             createdAt: DateTime.now(),
+            category: '',
           );
         }
       }).toList();
@@ -98,6 +99,7 @@ class TaskRemoteDatasourceImpl implements TaskRemoteDatasource {
             description: '',
             isCompleted: false,
             createdAt: DateTime.now(),
+            category: '',
           );
         }
       }).toList();

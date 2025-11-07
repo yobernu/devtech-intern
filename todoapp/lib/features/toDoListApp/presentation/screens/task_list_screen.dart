@@ -94,7 +94,6 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
       builder: (context, taskProvider, _) {
         if (taskProvider.errorMessage != null) {
           _handleError(taskProvider.errorMessage);
-          // taskProvider.clearError();
         }
 
         final waitingTasks = taskProvider.tasks
@@ -106,23 +105,21 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
         }
 
         return _buildScaffold(
-          body: RefreshIndicator(
-            onRefresh: refreshData,
-            child: Column(
-              children: [
-                const SearchBox(),
-                Expanded(
-                  child: waitingTasks.isEmpty && !taskProvider.isLoading
-                      ? _buildNoPendingTasks()
-                      : ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: waitingTasks.length,
-                          itemBuilder: (context, index) {
-                            return TaskList(tasks: [waitingTasks[index]]);
-                          },
-                        ),
-                ),
-              ],
+          body: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SearchBox(),
+                  const SizedBox(height: 16),
+                  if (waitingTasks.isEmpty && !taskProvider.isLoading)
+                    _buildNoPendingTasks()
+                  else
+                    TaskList(tasks: waitingTasks),
+                ],
+              ),
             ),
           ),
           showFAB: true,
@@ -137,7 +134,7 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF466A5E),
         title: const Text(
-          'Simple To-Do App',
+          'My Tasks',
           style: TextStyle(
             fontFamily: 'preahvihear',
             fontWeight: FontWeight.bold,
@@ -146,13 +143,13 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
+          icon: const Icon(Icons.menu_sharp, color: Colors.white),
           onPressed: widget.onMenuPressed,
         ),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: body,
+      body: SafeArea(child: body),
       floatingActionButton: showFAB
           ? FloatingActionButton(
               onPressed: () => _showAddTaskModal(context),
@@ -209,6 +206,4 @@ class _MainTaskScreenState extends State<MainTaskScreen> {
     }
   }
 }
-
-
-// overlay
+// search

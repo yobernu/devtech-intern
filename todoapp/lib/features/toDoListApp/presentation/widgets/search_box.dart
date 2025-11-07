@@ -5,29 +5,49 @@ class SearchBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color.fromARGB(255, 61, 107, 91);
+    const Color surfaceColor = Color.fromARGB(255, 246, 247, 248);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(32, 32, 32, 8),
-      child: TextField(
-        decoration: InputDecoration(
-          filled: true, // ✅ Enables background fill
-          fillColor: const Color.fromARGB(
-            255,
-            255,
-            255,
-            255,
-          ).withOpacity(0.3), // ✅ Your custom background color
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide(
-              color: const Color.fromARGB(255, 255, 255, 255),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+      child: Material(
+        elevation: 4.0,
+        shadowColor: Colors.black.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30.0),
+        color: surfaceColor,
+        child: TextField(
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: surfaceColor,
+
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide.none,
+            ),
+
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide(
+                color: primaryColor.withOpacity(0.5),
+                width: 1.5,
+              ),
+            ),
+
+            hintText: 'Search your tasks...',
+            hintStyle: TextStyle(
+              color: primaryColor.withOpacity(0.6),
+              fontSize: 16,
+            ),
+
+            prefixIcon: const Icon(Icons.search, color: primaryColor, size: 24),
+
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 14.0,
+              horizontal: 16.0,
             ),
           ),
-          hintText: 'Search ... ',
-          hintStyle: const TextStyle(
-            color: Color(0xFF466A5E),
-            fontFamily: 'preahvihear',
-          ),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF466A5E)),
+          style: const TextStyle(color: primaryColor, fontSize: 16),
+          cursorColor: primaryColor,
         ),
       ),
     );
