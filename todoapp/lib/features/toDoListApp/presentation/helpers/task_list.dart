@@ -153,6 +153,7 @@ class _TaskListState extends State<TaskList> {
               final task = tasksInCategory[index];
               return TaskRow(
                 title: task.title,
+                description: task.description ?? '',
                 timeInterval: (task.startTime != null && task.endTime != null)
                     ? '${task.startTime.toString().substring(11, 16)} - ${task.endTime.toString().substring(11, 16)}'
                     : '',

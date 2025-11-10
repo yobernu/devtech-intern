@@ -88,6 +88,24 @@ lib/
 └── main.dart                 # App entry point
 ```
 
+## 🖼️ Screenshots
+
+<p align="center">
+  <img src="assets/screenshots/photo_1_2025-11-10_11-53-05.jpg" alt="Screenshot 1" width="250" />
+  <img src="assets/screenshots/photo_2_2025-11-10_11-53-05.jpg" alt="Screenshot 2" width="250" />
+</p>
+<p align="center">
+  <img src="assets/screenshots/photo_3_2025-11-10_11-53-05.jpg" alt="Screenshot 3" width="250" />
+  <img src="assets/screenshots/photo_4_2025-11-10_11-53-05.jpg" alt="Screenshot 4" width="250" />
+</p>
+<p align="center">
+  <img src="assets/screenshots/photo_5_2025-11-10_11-53-05.jpg" alt="Screenshot 5" width="250" />
+  <img src="assets/screenshots/photo_6_2025-11-10_11-53-05.jpg" alt="Screenshot 6" width="250" />
+</p>
+<p align="center">
+  <img src="assets/screenshots/photo_7_2025-11-10_11-53-05.jpg" alt="Screenshot 7" width="250" />
+</p>
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

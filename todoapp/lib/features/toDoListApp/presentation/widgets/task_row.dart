@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class TaskRow extends StatelessWidget {
   final String title;
+  final String description;
   final String timeInterval;
   final bool isCompleted;
   final VoidCallback onToggle;
@@ -10,6 +11,7 @@ class TaskRow extends StatelessWidget {
   const TaskRow({
     Key? key,
     required this.title,
+    this.description = "",
     required this.timeInterval,
     required this.isCompleted,
     required this.onToggle,
@@ -95,6 +97,22 @@ class TaskRow extends StatelessWidget {
                       style: TextStyle(
                         fontSize: scale(16, context),
                         fontWeight: FontWeight.w600,
+                        color: textColor,
+                        decoration: isCompleted
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        decorationColor: completedColor,
+                        decorationThickness: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      maxLines: 2 ,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: scale(12, context),
+                        fontWeight: FontWeight.w400,
                         color: textColor,
                         decoration: isCompleted
                             ? TextDecoration.lineThrough
