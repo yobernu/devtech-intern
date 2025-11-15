@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/auth/presentation/widgets/auth_input_field.dart';
 import 'package:quizapp/features/auth/presentation/widgets/custom_button.dart';
+import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
 import 'package:quizapp/features/presentation/navigation/navigation.dart';
 
 // Bloc imports
@@ -60,14 +61,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      body: MeshGradientBackground(
+        // decoration: const BoxDecoration(
+        //   gradient: LinearGradient(
+        //     colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
+        //     begin: Alignment.topCenter,
+        //     end: Alignment.bottomCenter,
+        //   ),
+        // ),
         child: BlocConsumer<AuthBloc, UserState>(
           listener: (context, state) {
             if (state is UserLogInSuccessState) {

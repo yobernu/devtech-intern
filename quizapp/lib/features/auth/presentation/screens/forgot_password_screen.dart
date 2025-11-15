@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/auth/presentation/widgets/auth_input_field.dart';
 import 'package:quizapp/features/auth/presentation/widgets/custom_button.dart';
+import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
 import 'package:quizapp/features/presentation/navigation/navigation.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -51,14 +52,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         iconTheme: const IconThemeData(color: AppColors.surfaceWhite),
       ),
       extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      body: MeshGradientBackground(
+        // decoration: const BoxDecoration(
+        //   gradient: LinearGradient(
+        //     colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
+        //     begin: Alignment.topCenter,
+        //     end: Alignment.bottomCenter,
+        //   ),
+        // ),
         child: SingleChildScrollView(
           child: SafeArea(
             child: SizedBox(
@@ -97,7 +98,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                   const SizedBox(height: 48),
 
-                  // Form Area
                   Form(
                     key: _formKey,
                     child: AuthInputField(
@@ -107,7 +107,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
 
-                  // Submission Button
                   const SizedBox(height: 40),
                   AuthButton(
                     onPressed: _handleForgotPassword,
@@ -115,7 +114,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                      fgColor: AppColors.lightSurface,
                   ),
 
-                  // Signup Redirect
                   const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -130,8 +128,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // TODO: Replace with actual navigation logic
-                          // Navigator.pushNamed(context, AppRoutes.signup);
+                          Navigator.pushNamed(context, AppRoutes.signup);
                         },
                         child: const Text(
                           'Sign Up',

@@ -106,7 +106,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite.withOpacity(0.9),
+                            color: AppColors.surfaceWhite.withOpacity(0.8),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
@@ -126,7 +126,6 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                       ),
-
                       // Title
                       SizedBox(height: size.height * 0.05),
                       const Text(

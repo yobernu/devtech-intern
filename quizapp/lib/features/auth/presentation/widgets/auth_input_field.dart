@@ -32,10 +32,10 @@ class AuthInputField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: labelText,
           labelStyle: const TextStyle(
-            color: AppColors.inputBorder,
+            color: AppColors.darkText,
             fontWeight: FontWeight.w400,
           ),
-          prefixIcon: Icon(icon, color: AppColors.inputBorder.withOpacity(0.7)),
+          prefixIcon: Icon(icon, color: AppColors.primaryPurple.withOpacity(0.7)),
           fillColor: AppColors.surfaceWhite.withOpacity(0.1),
           filled: true,
           border: OutlineInputBorder(
