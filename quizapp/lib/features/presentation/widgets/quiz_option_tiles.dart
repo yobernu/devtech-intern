@@ -6,6 +6,7 @@ class QuizOptionTile extends StatelessWidget {
   final String prefix;
   final bool isCorrectAnswer;
   final bool isSelected;
+  final String hint;
 
   const QuizOptionTile({
     super.key,
@@ -13,6 +14,7 @@ class QuizOptionTile extends StatelessWidget {
     required this.prefix,
     this.isCorrectAnswer = false,
     this.isSelected = false,
+    this.hint = "No hints"
   });
 
   Color _getTileColor() {

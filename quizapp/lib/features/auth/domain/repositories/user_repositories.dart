@@ -31,8 +31,9 @@ abstract class UserRepository {
     required String imageUrl,
   });
 
-  Future<Either<Failure, Unit>> updatePassword({required String password});
+  // Future<Either<Failure, Unit>> updatePassword({required String password});
 
   Future<Either<Failure, Unit>> resetPassword({required String email});
   Future<Either<Failure, bool>> isAuthenticated();
+  Future<Either<Failure, UserEntity>> refreshToken();
 }

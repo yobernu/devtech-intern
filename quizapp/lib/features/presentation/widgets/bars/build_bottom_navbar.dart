@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/presentation/widgets/bars/build_nav_item.dart';
-
 Widget buildBottomNavBar() {
   return Container(
-    height: 70, // Height for the bottom nav bar
+    margin: EdgeInsets.only(bottom: 20, right: 40, left: 40, top: 20),
+    height: 71,
     decoration: BoxDecoration(
-      color: AppColors.surfaceWhite,
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      color: AppColors.accentPink,
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.1),
@@ -18,11 +18,11 @@ Widget buildBottomNavBar() {
     ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        buildNavItem(Icons.explore, 'Explore', isActive: true),
-        buildNavItem(Icons.leaderboard_outlined, 'Leaderboard'),
-        buildNavItem(Icons.bookmark_outline, 'Bookmarks'),
-        buildNavItem(Icons.settings_outlined, 'Settings'),
+      children: const [
+        AnimatedNavItem(icon: Icons.explore, label: 'Explore'),
+        AnimatedNavItem(icon: Icons.leaderboard_outlined, label: 'Leaderboard', isActive: true,),
+        AnimatedNavItem(icon: Icons.bookmark_outline, label: 'Bookmarks'),
+        AnimatedNavItem(icon: Icons.settings_outlined, label: 'Settings'),
       ],
     ),
   );

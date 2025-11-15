@@ -6,7 +6,7 @@ class CustomPillButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  final VoidCallback onPress;
+  final VoidCallback onPress; 
 
   const CustomPillButton({
     super.key,
@@ -16,6 +16,7 @@ class CustomPillButton extends StatelessWidget {
     required this.onPress,
   });
 
+  
   @override
   Widget build(BuildContext context) {
     return Column(

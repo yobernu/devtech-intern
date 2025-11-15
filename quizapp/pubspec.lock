@@ -10,7 +10,7 @@ packages:
     source: hosted
     version: "1.3.64"
   app_links:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: app_links
       sha256: "5f88447519add627fe1cbcab4fd1da3d4fed15b9baf29f28b22535c95ecee3e8"
@@ -254,6 +254,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_bloc:
+    dependency: "direct main"
+    description:
+      name: flutter_bloc
+      sha256: cf51747952201a455a1c840f8171d273be009b932c75093020f9af64f2123e38
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.1.1"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -301,6 +309,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.5.0"
+  get_it:
+    dependency: "direct main"
+    description:
+      name: get_it
+      sha256: "84792561b731b6463d053e9761a5236da967c369da10b134b8585a5e18429956"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.0.5"
   gotrue:
     dependency: transitive
     description:
@@ -746,6 +762,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  units_converter:
+    dependency: "direct main"
+    description:
+      name: units_converter
+      sha256: "103a5f849b12111ca576957035762dc8a23f8f8f4c29ea272740c57b2d0f08bb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.4"
   url_launcher:
     dependency: transitive
     description:

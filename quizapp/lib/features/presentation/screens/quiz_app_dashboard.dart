@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
+import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
 import 'package:quizapp/features/presentation/widgets/bars/build_bottom_navbar.dart';
 import 'package:quizapp/features/presentation/widgets/build_more_games_section.dart';
 import 'package:quizapp/features/presentation/widgets/cards/custom_pill_button.dart';
@@ -15,14 +16,16 @@ class QuizAppDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      extendBody: true,
+      // MeshGradientBackground()
+      body: MeshGradientBackground(
+        // decoration: const BoxDecoration(
+        //   gradient: LinearGradient(
+        //     colors: [AppColors.secondaryPurple, AppColors.primaryPurple],
+        //     begin: Alignment.topCenter,
+        //     end: Alignment.bottomCenter,
+        //   ),
+        // ),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,8 +39,8 @@ class QuizAppDashboard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      buildDailyTaskCard(context),
-                      buildQuizCategories(context),
+                      DailyTaskCard(),
+                      AnimatedQuizCategories(),
                       buildMoreGamesSection(context),
                       const SizedBox(height: 50), // Extra space for bottom nav
                     ],

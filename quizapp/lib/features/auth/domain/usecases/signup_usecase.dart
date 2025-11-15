@@ -21,7 +21,6 @@ class SignupUParams extends Params {
 
 class SignUpUseCase implements UseCase<UserEntity, SignupUParams> {
   final UserRepository repository;
-
   SignUpUseCase(this.repository);
 
   @override

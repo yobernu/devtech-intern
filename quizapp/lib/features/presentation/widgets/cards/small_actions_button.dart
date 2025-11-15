@@ -14,14 +14,14 @@ class SmallActionButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { 
     return Column(
       children: [
         Container(
           height: 80,
           width: 80,
           decoration: BoxDecoration(
-            color: color,
+            color: AppColors.smallButtonBlue.withOpacity(0.2),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -40,7 +40,7 @@ class SmallActionButton extends StatelessWidget {
               Text(
                 label,
                 style: const TextStyle(
-                  color: AppColors.darkText,
+                  color: AppColors.lightSurface,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),

@@ -4,8 +4,17 @@ import 'package:quizapp/core/constants/appcolors.dart';
 class AuthButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String title;
+  final Color? bgColor; 
+  final Color? fgColor; 
 
-  const AuthButton({super.key, required this.onPressed, required this.title});
+  const AuthButton({
+    super.key, 
+    required this.onPressed, 
+    required this.title, 
+    this.bgColor  = AppColors.primaryPurple,  
+    this.fgColor = AppColors.primaryPurple,
+    
+    });
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +26,8 @@ class AuthButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryPurple,
-          foregroundColor: AppColors.surfaceWhite,
+          backgroundColor: bgColor,
+          foregroundColor: fgColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),

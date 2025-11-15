@@ -23,6 +23,10 @@ dependencies:
   flutter_zoom_drawer: ^3.1.2
   supabase_flutter: ^2.10.3
   bloc: ^9.1.0
+  get_it: ^9.0.5
+  units_converter: ^3.0.4
+  flutter_bloc: ^9.1.1
+  app_links: ^6.3.3
 
 dev_dependencies:
   flutter_test:

@@ -23,7 +23,7 @@ Widget buildMoreGamesSection(BuildContext context) {
               TextButton(
                 onPressed: () {},
                 child: const Text(
-                  'View All',
+                  'View Alls',
                   style: TextStyle(color: AppColors.surfaceWhite),
                 ),
               ),
@@ -38,6 +38,42 @@ Widget buildMoreGamesSection(BuildContext context) {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             children: [
+              MoreGameCard(
+                title: 'Language Quiz',
+                questions: '15 Questions',
+                score: '24.7K',
+                icon: Icons.menu_book,
+                gradientStart: const Color(0xFFF962FF),
+                gradientEnd: const Color(0xFF904EFE),
+                subtitle: '',
+              ),
+              MoreGameCard(
+                title: 'Exam Quiz',
+                questions: '12 Questions',
+                score: '12.5K',
+                icon: Icons.military_tech_outlined,
+                gradientStart: const Color(0xFFFFCC33),
+                gradientEnd: const Color(0xFFFF9900),
+                subtitle: '',
+              ),
+              MoreGameCard(
+                title: 'Language Quiz',
+                questions: '15 Questions',
+                score: '24.7K',
+                icon: Icons.menu_book,
+                gradientStart: const Color(0xFFF962FF),
+                gradientEnd: const Color(0xFF904EFE),
+                subtitle: '',
+              ),
+              MoreGameCard(
+                title: 'Exam Quiz',
+                questions: '12 Questions',
+                score: '12.5K',
+                icon: Icons.military_tech_outlined,
+                gradientStart: const Color(0xFFFFCC33),
+                gradientEnd: const Color(0xFFFF9900),
+                subtitle: '',
+              ),
               MoreGameCard(
                 title: 'Language Quiz',
                 questions: '15 Questions',
