@@ -7,6 +7,7 @@ class Question {
   final int correctAnswerIndex;
   final String explanation;
   final Difficulty difficulty;
+  final String hint;
   final int timeLimit; // in seconds
   final String? imageUrl;
   final String? audioUrl;
@@ -20,6 +21,7 @@ class Question {
     required this.correctAnswerIndex,
     required this.explanation,
     required this.difficulty,
+    required this.hint,
     required this.timeLimit,
     this.imageUrl,
     this.audioUrl,
@@ -36,9 +38,9 @@ class AnswerOption {
 enum QuestionType {
   multipleChoice,
   trueFalse,
-  textInput,
-  imageSelection,
-  audioBased,
+  // textInput,
+  // imageSelection,
+  // audioBased,
 }
 
 enum Difficulty { easy, medium, hard, expert }

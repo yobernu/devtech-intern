@@ -4,11 +4,11 @@ class User {
   final String email;
   final String profileImageUrl;
   final int experiencePoints;
-  final String rank; // 'Expert', 'Beginner', etc.
-  final int score; // Current score/points
+  final String rank;
+  final int score;
   final DateTime joinDate;
   final List<String> friends;
-  final Map<String, int> categoryStats; // Stats per category
+  final Map<String, int> categoryStats;
 
   User({
     required this.id,

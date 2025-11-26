@@ -1,14 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
-import 'package:quizapp/features/presentation/helpers/quiz_result_message.dart';
-import 'package:quizapp/features/presentation/helpers/show_questions.dart';
+// Assuming these imports are necessary for your project
+import 'package:quizapp/features/domain/entities/question_entity.dart'; // Contains Difficulty enum
+import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
+import 'package:quizapp/features/presentation/helpers/show_questions.dart'; // If ShowQuestion is a separate widget
+import 'package:quizapp/features/presentation/provider/questions/questions_bloc.dart';
+import 'package:quizapp/features/presentation/provider/questions/questions_events.dart';
 
-class ShowQuestionScreen extends StatelessWidget {
-  const ShowQuestionScreen({super.key});
+class ShowQuestionScreen extends StatefulWidget {
+  final String categoryId;
+  final Difficulty difficulty;
+
+  const ShowQuestionScreen({
+    super.key,
+    required this.categoryId,
+    required this.difficulty,
+  });
+
+  @override
+  State<ShowQuestionScreen> createState() => _ShowQuestionScreenState();
+}
+
+class _ShowQuestionScreenState extends State<ShowQuestionScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _fetchQuestions();
+  }
+
+  void _fetchQuestions() {
+    context.read<QuestionsBloc>().add(
+      GetQuestionsByCategoryEvent(
+        categoryId: widget.categoryId,
+        difficulty: widget.difficulty,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -24,28 +55,22 @@ class ShowQuestionScreen extends StatelessWidget {
               backgroundColor: WidgetStatePropertyAll(
                 AppColors.surfaceWhite.withOpacity(0.8),
               ),
-              shape: WidgetStatePropertyAll(
-                CircleBorder(),
-              ),
+              shape: const WidgetStatePropertyAll(CircleBorder()),
             ),
-            onPressed: () {},
+            onPressed: () => Navigator.pop(context),
           ),
         ),
-        title: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          // decoration: BoxDecoration(
-          //   color: AppColors.surfaceWhite.withOpacity(0.3),
-          //   borderRadius: BorderRadius.circular(20),
-          // ),
-          child: const Text(
-            'Question 3/10',
-            style: TextStyle(
-              color: AppColors.surfaceWhite,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
+        // title: Container(
+        //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        //   child: const Text(
+        //     'Question 1/10',
+        //     style: TextStyle(
+        //       color: AppColors.darkText,
+        //       fontSize: 16,
+        //       fontWeight: FontWeight.w600,
+        //     ),
+        //   ),
+        // ),
         actions: [
           IconButton(
             icon: const Icon(Icons.bookmark),
@@ -64,19 +89,11 @@ class ShowQuestionScreen extends StatelessWidget {
         ],
       ),
       body: SizedBox.expand(
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primaryPurple, AppColors.lightSurface],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
+        child: MeshGradientBackground(
           child: SafeArea(
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Container(
-                // height: size.height * 0.9,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 24,
@@ -89,23 +106,7 @@ class ShowQuestionScreen extends StatelessWidget {
                   color: AppColors.lightSurface,
                   borderRadius: BorderRadius.circular(12),
                 ),
-
-                // 🔹 Change between pass/fail easily
-                // child: QuizResultMessage(
-                //   isPassed: false, // change this to false for failure message
-                //   scoreLabel: "4/10",
-                //   categoryLabel: "Football",
-                //   timeLabel: "00:11",
-                // ),
-                child: QuizResultMessage(
-                  categoryLabel: "Sports",
-                  isPassed: true,
-                  scoreLabel: "10",
-                  timeLabel: "00:12",
-                  finishedTime: "00:11",
-                  ),
-
-                  // ShowQuestion()
+                child: const ShowQuestion(),
               ),
             ),
           ),

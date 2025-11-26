@@ -7,9 +7,9 @@ import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
 import 'package:quizapp/features/presentation/navigation/navigation.dart';
 
 // Bloc imports
-import 'package:quizapp/features/presentation/provider/auth_bloc.dart';
-import 'package:quizapp/features/presentation/provider/auth_event.dart';
-import 'package:quizapp/features/presentation/provider/auth_state.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_event.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       AuthButton(
                         onPressed: isLoading ? () {} : _handleLogin,
                         title: isLoading ? "PROCESSING..." : "SIGN IN",
-                         fgColor: AppColors.lightSurface,
+                        fgColor: AppColors.lightSurface,
                       ),
 
                       const SizedBox(height: 20),

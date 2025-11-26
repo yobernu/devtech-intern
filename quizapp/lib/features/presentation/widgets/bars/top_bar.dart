@@ -10,7 +10,7 @@ Widget buildTopBar(BuildContext context) {
         const CircleAvatar(
           radius: 20,
           backgroundImage: NetworkImage(
-            'https://placehold.co/100x100/A066FF/FFFFFF?text=R',
+            'https://images.unsplash.com/photo-1762893021980-b6accb9b94d9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
           ),
           backgroundColor: AppColors.surfaceWhite,
         ),
@@ -19,8 +19,7 @@ Widget buildTopBar(BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              // user name
-              'Roxane Harley',
+              'Guest User',
               style: TextStyle(
                 color: AppColors.surfaceWhite,
                 fontWeight: FontWeight.bold,

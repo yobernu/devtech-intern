@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/auth/presentation/widgets/custom_button.dart';
+import 'package:quizapp/features/domain/entities/question_entity.dart';
 
 class CheckAnswers extends StatelessWidget {
-  const CheckAnswers({super.key});
+  final List<Question> questions;
+  const CheckAnswers({super.key, required this.questions});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // question show space
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(32),
@@ -41,21 +42,19 @@ class CheckAnswers extends StatelessWidget {
 
         ListView.builder(
           itemCount: 15,
-          shrinkWrap:
-              true, // IMPORTANT: Allows it to take up minimum vertical space
-          physics:
-              const NeverScrollableScrollPhysics(), // IMPORTANT: Prevents nested scrolling
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (BuildContext context, int index) {
-            // ...
             return const ListTile(
               title: Text("A"),
               hoverColor: AppColors.accentOrange,
-              subtitle: Text("Which soccer team won the FIFA World Cup for the first time Which soccer team won the FIFA World Cup for the first time?"),
-              );
+              subtitle: Text(
+                "Which soccer team won the FIFA World Cup for the first time Which soccer team won the FIFA World Cup for the first time?",
+              ),
+            );
           },
         ),
 
-        // const SizedBox(height: 32),
         const SizedBox(height: 40),
         AuthButton(
           onPressed: () {},

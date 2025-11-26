@@ -5,14 +5,14 @@ import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/core/constants/auth_services.dart';
 import 'package:quizapp/features/presentation/di_container.dart' as di;
 import 'package:quizapp/features/presentation/navigation/navigation.dart';
-import 'package:quizapp/features/presentation/provider/auth_bloc.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
+import 'package:quizapp/features/presentation/provider/categories/categories_bloc.dart';
+import 'package:quizapp/features/presentation/provider/questions/questions_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Supabase before using it
   await Supabase.initialize(
     url: AuthService.supabaseUrl,
     anonKey: AuthService.supabaseAnonKey,
@@ -41,30 +41,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initDeepLinkListener() {
-    _sub = _appLinks.uriLinkStream.listen((Uri uri) async {
-      final supabase = Supabase.instance.client;
-
-      // Example deep link: com.quizapp://auth-callback?code=...
-      if (uri.scheme == 'myapp' && uri.host == 'auth-callback') {
-        try {
-          // Exchange token for a session
-          await supabase.auth.getSessionFromUrl(uri);
-
-          // Navigate the user to the home page after successful verification
-          if (mounted) {
-            Navigator.pushNamedAndRemoveUntil(
-              context,
-              AppRoutes.login, // <-- Change if needed
-              (_) => false,
-            );
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri uri) async {
+        final supabase = Supabase.instance.client;
+        if (uri.scheme == 'myapp' && uri.host == 'auth-callback') {
+          try {
+            await supabase.auth.getSessionFromUrl(uri);
+            if (mounted) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                AppRoutes.login,
+                (_) => false,
+              );
+            }
+          } catch (e) {
+            debugPrint("Deep link auth error: $e");
           }
-        } catch (e) {
-          debugPrint("Deep link auth error: $e");
         }
-      }
-    }, onError: (err) {
-      debugPrint("Deep link stream error: $err");
-    });
+      },
+      onError: (err) {
+        debugPrint("Deep link stream error: $err");
+      },
+    );
   }
 
   @override
@@ -78,6 +76,8 @@ class _MyAppState extends State<MyApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => di.sl<AuthBloc>()),
+        BlocProvider(create: (_) => di.sl<QuestionsBloc>()),
+        BlocProvider(create: (_) => di.sl<CategoriesBloc>()),
       ],
       child: MaterialApp(
         title: 'Quiz App UI',
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: AppColors.surfaceWhite,
         ),
         routes: AppRoutes.routes,
-        initialRoute: AppRoutes.signup,
+        initialRoute: AppRoutes.home,
         debugShowCheckedModeBanner: false,
       ),
     );

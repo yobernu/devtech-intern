@@ -1,166 +1,299 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
-import 'package:quizapp/features/presentation/widgets/cards/small_actions_button.dart';
-import 'package:quizapp/features/presentation/widgets/quiz_option_tiles.dart';
+import 'package:quizapp/features/presentation/helpers/alerts/show_custom_snack_bar.dart';
+import 'package:quizapp/features/presentation/helpers/show_questions_body.dart';
+import 'package:quizapp/features/presentation/provider/questions/questions_bloc.dart';
+import 'package:quizapp/features/presentation/provider/questions/questions_events.dart';
+import 'package:quizapp/features/presentation/provider/questions/questions_state.dart';
 
-class ShowQuestion extends StatelessWidget {
+// attemptedQuestions
+class ShowQuestion extends StatefulWidget {
   const ShowQuestion({super.key});
 
-  // Mock data to represent the state shown in the image
-  final String _questionText =
-      'Which soccer team won the FIFA World Cup for the first time Which soccer team won the FIFA World Cup for the first time?';
-  final List<Map<String, dynamic>> _options = const [
-    {'prefix': 'A', 'text': 'Uruguay', 'isCorrect': true, 'isSelected': false},
-    {'prefix': 'B', 'text': 'Brazil', 'isCorrect': false, 'isSelected': false},
-    {'prefix': 'C', 'text': 'Italy', 'isCorrect': false, 'isSelected': false},
-    {'prefix': 'D', 'text': 'Germany', 'isCorrect': false, 'isSelected': false},
-  ];
+  @override
+  State<ShowQuestion> createState() => _ShowQuestionState();
+}
+
+class _ShowQuestionState extends State<ShowQuestion> {
+  int? _selectedOptionIndex;
+  int _lastQuestionIndex = -1;
+
+  final Set<int> _hiddenOptionIndices = {};
+  bool _is5050Used = false;
+  bool _isAudienceUsed = false;
+  bool _isHintUsed = false;
+
+  void _nextQuestion(
+    BuildContext context,
+    int currentIndex,
+    bool isCorrect,
+    int timeTaken,
+  ) {
+    context.read<QuestionsBloc>().add(
+      NextQuestionEvent(
+        currentIndex,
+        isCorrect: isCorrect,
+        timeTaken: timeTaken,
+      ),
+    );
+  }
+
+  void _onOptionSelected(int index) {
+    if (_selectedOptionIndex != null) return;
+    setState(() {
+      _selectedOptionIndex = index;
+    });
+  }
+
+  void _handleTimeExpired(
+    BuildContext context,
+    int currentIndex,
+    int timeLimit,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const AlertDialog(
+        title: Text("Time's Up!"),
+        content: Text("Moving to the next question..."),
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Close dialog
+        // Time taken is the full time limit since it expired
+        _nextQuestion(context, currentIndex, false, timeLimit);
+      }
+    });
+  }
+
+  void _use5050(int correctAnswerIndex, int totalOptions) {
+    if (_is5050Used || _selectedOptionIndex != null) return;
+
+    final incorrectIndices = List.generate(
+      totalOptions,
+      (i) => i,
+    ).where((i) => i != correctAnswerIndex).toList();
+
+    incorrectIndices.shuffle();
+
+    setState(() {
+      _hiddenOptionIndices.addAll(incorrectIndices.take(2));
+      _is5050Used = true;
+    });
+  }
+
+  void _useAudience(int correctAnswerIndex) {
+    if (_isAudienceUsed || _selectedOptionIndex != null) return;
+
+    setState(() {
+      _isAudienceUsed = true;
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Audience Poll"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Here is what the audience thinks:"),
+              const SizedBox(height: 16),
+              // Simple bar chart simulation
+              ...List.generate(4, (index) {
+                final isCorrect = index == correctAnswerIndex;
+                final percentage = isCorrect
+                    ? 65
+                    : 10 + (index * 2); // Fake data
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      Text(String.fromCharCode('A'.codeUnitAt(0) + index)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: LinearProgressIndicator(
+                          value: percentage / 100,
+                          color: isCorrect
+                              ? AppColors.correctGreen
+                              : AppColors.primaryPurple,
+                          backgroundColor: AppColors.primaryPurple.withOpacity(
+                            0.1,
+                          ),
+                          minHeight: 8,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text("$percentage%"),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _useHint(String hintText) {
+    if (_isHintUsed || _selectedOptionIndex != null) return;
+
+    setState(() {
+      _isHintUsed = true;
+    });
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hint"),
+          content: Text(
+            hintText.isNotEmpty
+                ? hintText
+                : "No hint available for this question.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Thanks!"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // question show space
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              colors: [
-                const Color.fromARGB(255, 102, 84, 193).withOpacity(0.25),
-                const Color.fromARGB(255, 255, 255, 255),
-              ],
-              center: Alignment.center,
-              radius: 0.95,
-              focal: Alignment.topCenter,
-              focalRadius: 0.3,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.darkText.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Text(
-            _questionText,
-            style: const TextStyle(
-              color: AppColors.darkText,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        const SizedBox(height: 8),
-        // --- Time and Progress Bar ---
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Time',
-              style: TextStyle(
-                color: AppColors.darkText,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: 0.3,
-                  color: AppColors.accentOrange,
-                  backgroundColor: AppColors.accentOrange.withOpacity(0.3),
-                  minHeight: 10,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              '00:12',
-              style: TextStyle(
-                color: AppColors.darkText,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-
-        // --- Answer Options List ---
-        ..._options.map((option) {
-          return QuizOptionTile(
-            optionText: option['text'],
-            prefix: option['prefix'],
-            isCorrectAnswer: option['isCorrect'],
-            isSelected: option['isSelected'],
+    return BlocConsumer<QuestionsBloc, QuestionsState>(
+      listener: (context, state) {
+        if (state is QuestionsFailureState) {
+          showSnackbar(
+            context,
+            'Quiz Fetch Failed: ${state.failure.message}',
+            isError: true,
           );
-        }).toList(),
+        } else if (state is QuizResultsState) {
+          final percentage = (state.score / state.totalQuestions) * 100;
+          final isPassed = percentage >= 50;
 
-        // Using Spacer() with a surrounding Flexible in a Column can be tricky,
-        // so I'm replacing it with Sized Box and wrapping the Row in Flexible.
+          Navigator.pushNamed(
+            context,
+            '/resultScreen',
+            arguments: {
+              'isPassed': isPassed,
+              'scoreLabel': '${state.score}/${state.totalQuestions}',
+              'categoryLabel': state.attemptedQuestions.isNotEmpty
+                  ? state.attemptedQuestions.first.categoryId
+                  : 'General',
+              'timeLabel': '${state.totalQuestions * 30}s',
+              'finishedTime': '${state.totalTimeTaken}s',
+              'attemptedQuestions': state.attemptedQuestions,
+            },
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state is QuestionsLoadingState) {
+          return const Center(
+            child: CircularProgressIndicator(color: AppColors.primaryPurple),
+          );
+        }
 
-        const Spacer(),
-        SizedBox(height: 40,),
+        if (state is QuestionsLoadedState) {
+          if (state.questions.isEmpty) {
+            return const Center(child: Text('No questions found.'));
+          }
 
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              SmallActionButton(
-                icon: Icons.person_add_alt_1,
-                label: '50/50',
-                color: AppColors.accentOrange,
-              ),
-              const SizedBox(width: 12),
-              SmallActionButton(
-                icon: Icons.people_alt,
-                label: 'Audience',
-                color: AppColors.accentOrange,
-              ),
-              // const SizedBox(width: 12),
-              // SmallActionButton(
-              //   icon: Icons.timer,
-              //   label: 'Add Time',
-              //   color: AppColors.accentOrange,
-              // ),
-              const SizedBox(width: 12),
-              SmallActionButton(
-                icon: Icons.skip_next,
-                label: 'Skip',
-                color: AppColors.accentOrange,
-              ),
-              const SizedBox(width: 12),
-              // You can add more easily now
-              SmallActionButton(
-                icon: Icons.lightbulb,
-                label: 'Hint',
-                color: AppColors.accentOrange,
-              ),
-            ],
-          ),
-        ),
+          final currentQuestionIndex = state.currentQuestionIndex;
 
-        const SizedBox(height: 40),
-      ],
+          if (currentQuestionIndex != _lastQuestionIndex) {
+            _selectedOptionIndex = null;
+            _lastQuestionIndex = currentQuestionIndex;
+            _hiddenOptionIndices.clear();
+            _is5050Used = false;
+            _isAudienceUsed = false;
+            _isHintUsed = false;
+          }
+
+          final questionsLength = state.questions.length;
+          final isLastQuestion = currentQuestionIndex == questionsLength - 1;
+          final timeLength = state.timeLength;
+
+          final currentQuestion = state.questions[currentQuestionIndex];
+
+          final optionsData = currentQuestion.options.asMap().entries.map((
+            entry,
+          ) {
+            final index = entry.key;
+            final option = entry.value;
+
+            return {
+              'text': option.text,
+              'prefix': String.fromCharCode('A'.codeUnitAt(0) + index),
+              'isCorrect': index == currentQuestion.correctAnswerIndex,
+              'isSelected': index == _selectedOptionIndex,
+              'isHidden': _hiddenOptionIndices.contains(index),
+              'imageUrl': option.imageUrl,
+            };
+          }).toList();
+
+          return ShowQuestionsBody(
+            questionText: currentQuestion.questionText,
+            options: optionsData,
+            onNextPressed: (remainingTime) {
+              final isCorrect =
+                  _selectedOptionIndex != null &&
+                  _selectedOptionIndex == currentQuestion.correctAnswerIndex;
+              final timeTaken = timeLength - remainingTime;
+
+              _nextQuestion(
+                context,
+                currentQuestionIndex,
+                isCorrect,
+                timeTaken,
+              );
+            },
+            onOptionSelected: _onOptionSelected,
+            onTimeExpired: () =>
+                _handleTimeExpired(context, currentQuestionIndex, timeLength),
+            isAnswered: _selectedOptionIndex != null,
+            isLastQuestion: isLastQuestion,
+            currentQuestionNumber: currentQuestionIndex + 1,
+            totalQuestions: questionsLength,
+            initialTimeLength: timeLength,
+
+            on5050Pressed: () => _use5050(
+              currentQuestion.correctAnswerIndex,
+              currentQuestion.options.length,
+            ),
+            onAudiencePressed: () =>
+                _useAudience(currentQuestion.correctAnswerIndex),
+            onHintPressed: () => _useHint(currentQuestion.hint),
+          );
+        }
+
+        if (state is QuestionsFailureState) {
+          return Center(child: Text('Error: ${state.failure.message}'));
+        }
+
+        if (state is QuizResultsState) {
+          return const SizedBox.shrink();
+        }
+
+        return const Center(child: Text('Select a category to begin.'));
+      },
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-// ✅ Unified Pass/Fail Message Widget

@@ -23,4 +23,18 @@ class QuizCategory {
     required this.availableDifficulties,
     required this.imageUrl,
   });
+
+  factory QuizCategory.fromJson(Map<String, dynamic> map) {
+    return QuizCategory(
+      id: map['id'],
+      name: map['name'],
+      icon: map['icon'],
+      primaryColor: map['primaryColor'],
+      description: map['description'],
+      questionCount: map['questionCount'],
+      totalPlays: map['totalPlays'],
+      availableDifficulties: map['availableDifficulties'],
+      imageUrl: map['imageUrl'],
+    );
+  }
 }

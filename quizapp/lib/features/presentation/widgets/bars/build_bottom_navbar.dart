@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/presentation/widgets/bars/build_nav_item.dart';
-Widget buildBottomNavBar() {
+
+Widget buildBottomNavBar(int selectedIndex, Function(int) onItemTapped) {
   return Container(
-    margin: EdgeInsets.only(bottom: 20, right: 40, left: 40, top: 20),
+    margin: const EdgeInsets.only(bottom: 20, right: 40, left: 40, top: 20),
     height: 71,
     decoration: BoxDecoration(
-      color: AppColors.accentPink,
+      color: AppColors.primaryPurple.withOpacity(0.5),
       borderRadius: const BorderRadius.all(Radius.circular(20)),
       boxShadow: [
         BoxShadow(
@@ -18,11 +19,26 @@ Widget buildBottomNavBar() {
     ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: const [
-        AnimatedNavItem(icon: Icons.explore, label: 'Explore'),
-        AnimatedNavItem(icon: Icons.leaderboard_outlined, label: 'Leaderboard', isActive: true,),
-        AnimatedNavItem(icon: Icons.bookmark_outline, label: 'Bookmarks'),
-        AnimatedNavItem(icon: Icons.settings_outlined, label: 'Settings'),
+      children: [
+        AnimatedNavItem(
+          icon: Icons.explore,
+          label: 'Explore',
+          isActive: selectedIndex == 0,
+          onTap: () => onItemTapped(0),
+        ),
+
+        AnimatedNavItem(
+          icon: Icons.leaderboard_outlined,
+          label: 'Leaderboard',
+          isActive: selectedIndex == 2,
+          onTap: () => onItemTapped(2),
+        ),
+        AnimatedNavItem(
+          icon: Icons.settings_outlined,
+          label: 'Settings',
+          isActive: selectedIndex == 3,
+          onTap: () => onItemTapped(3),
+        ),
       ],
     ),
   );

@@ -11,8 +11,8 @@ import 'package:quizapp/features/auth/domain/usecases/login_usecase.dart';
 import 'package:quizapp/features/auth/domain/usecases/refresh_token_usecase.dart'; // ADDED
 import 'package:quizapp/features/auth/domain/usecases/signout_usecase.dart';
 import 'package:quizapp/features/auth/domain/usecases/signup_usecase.dart';
-import 'package:quizapp/features/presentation/provider/auth_event.dart';
-import 'package:quizapp/features/presentation/provider/auth_state.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_event.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_state.dart';
 
 class AuthBloc extends Bloc<UserEvent, UserState> {
   final SignUpUseCase signUpUseCase;

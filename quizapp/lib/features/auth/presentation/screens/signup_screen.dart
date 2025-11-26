@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/auth/presentation/widgets/auth_input_field.dart';
 import 'package:quizapp/features/auth/presentation/widgets/custom_button.dart';
+import 'package:quizapp/features/presentation/helpers/alerts/show_custom_snack_bar.dart';
 import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
 import 'package:quizapp/features/presentation/navigation/navigation.dart';
 // BLoC Imports
-import 'package:quizapp/features/presentation/provider/auth_bloc.dart';
-import 'package:quizapp/features/presentation/provider/auth_event.dart';
-import 'package:quizapp/features/presentation/provider/auth_state.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_event.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_state.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -47,15 +48,15 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  void _showSnackbar(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: isError ? Colors.redAccent : Colors.green,
-      ),
-    );
-  }
+  // void _showSnackbar(String message, {bool isError = false}) {
+  //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(message),
+  //       backgroundColor: isError ? Colors.redAccent : Colors.green,
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -76,13 +77,18 @@ class _SignupScreenState extends State<SignupScreen> {
         child: BlocConsumer<AuthBloc, UserState>(
           listener: (context, state) {
             if (state is UserSignUpSuccessState) {
-              _showSnackbar('Signup successful! Welcome.', isError: false);
+              showSnackbar(
+                context,
+                'Signup successful! Welcome.',
+                isError: false,
+              );
               // Navigate to Home screen on success
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
             } else if (state is UserFailureState) {
-              _showSnackbar(
+              showSnackbar(
+                context,
                 'Signup Failed: ${state.failure.message}',
                 isError: true,
               );

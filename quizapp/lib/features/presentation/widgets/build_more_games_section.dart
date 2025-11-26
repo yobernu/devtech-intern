@@ -31,9 +31,8 @@ Widget buildMoreGamesSection(BuildContext context) {
           ),
         ),
         const SizedBox(height: 16),
-        // Horizontal list of large cards
         SizedBox(
-          height: 200, // Fixed height for the cards
+          height: 200,
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -92,7 +91,6 @@ Widget buildMoreGamesSection(BuildContext context) {
                 gradientEnd: const Color(0xFFFF9900),
                 subtitle: '',
               ),
-              // Add more cards as needed
             ],
           ),
         ),

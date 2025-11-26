@@ -14,7 +14,6 @@ class MeshGradientBackground extends StatelessWidget {
           child: Container(color: Color(0xFFE7DFFF)),
         ),
 
-        // Mesh blobs
         ...[
           _blob(Alignment(-0.5, -0.4), AppColors.primaryPurple),
           _blob(Alignment(0.8, -0.5), Color(0xFFA8D0FF)),
@@ -33,7 +32,7 @@ class MeshGradientBackground extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: RadialGradient(
             center: center,
-            radius: 0.6,
+            radius: 0.8,
             colors: [
               color.withOpacity(0.55),
               Colors.transparent,

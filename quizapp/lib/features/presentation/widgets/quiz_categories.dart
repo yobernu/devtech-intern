@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
+import 'package:quizapp/features/domain/entities/question_entity.dart';
+import 'package:quizapp/features/domain/entities/quiz_category_entity.dart';
 import 'package:quizapp/features/presentation/widgets/cards/custom_pill_button.dart';
+
 class AnimatedQuizCategories extends StatefulWidget {
-  const AnimatedQuizCategories({super.key});
+  final List<QuizCategory> categories;
+
+  const AnimatedQuizCategories({super.key, required this.categories});
 
   @override
   State<AnimatedQuizCategories> createState() => _AnimatedQuizCategoriesState();
 }
 
-class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late List<Animation<Offset>> _slideAnimations;
-  late List<Animation<double>> _scaleAnimations;
-
-  final List<Map<String, dynamic>> categories = [
-    {'icon': Icons.sports_soccer, 'label': 'Football', 'color': Color(0xFFE45B41)},
-    {'icon': Icons.lightbulb_outline, 'label': 'Science', 'color': Color(0xFF41A8E4)},
-    {'icon': Icons.shopping_bag_outlined, 'label': 'Fashion', 'color': Color(0xFFE441A8)},
-    {'icon': Icons.movie_outlined, 'label': 'Movie', 'color': Color(0xFF41E45B)},
-    {'icon': Icons.music_note_outlined, 'label': 'Music', 'color': Color(0xFFE4B641)},
-  ];
+class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late List<Animation<Offset>> _slideAnimations = [];
+  late List<Animation<double>> _scaleAnimations = [];
 
   @override
   void initState() {
@@ -28,52 +26,94 @@ class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories> with Ti
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
+    if (widget.categories.isNotEmpty) {
+      _setupAnimations(widget.categories.length);
+    }
+  }
 
-    _slideAnimations = List.generate(categories.length, (index) {
-      final start = index * 0.1;
+  void _setupAnimations(int count) {
+    _slideAnimations.clear();
+    _scaleAnimations.clear();
+
+    for (var i = 0; i < count; i++) {
+      final start = i * 0.1;
       final end = start + 0.4;
-      return Tween<Offset>(
-        begin: const Offset(-1.2, 0),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Interval(start, end, curve: Curves.easeOut),
-      ));
-    });
 
-    _scaleAnimations = List.generate(categories.length, (index) {
-      final start = index * 0.1;
-      final end = start + 0.4;
-      return Tween<double>(
-        begin: 0.8,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Interval(start, end, curve: Curves.easeOutBack),
-      ));
-    });
+      _slideAnimations.add(
+        Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(start, end, curve: Curves.easeOut),
+          ),
+        ),
+      );
 
-    _controller.forward();
+      _scaleAnimations.add(
+        Tween<double>(begin: 0.8, end: 1.0).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(start, end, curve: Curves.easeOutBack),
+          ),
+        ),
+      );
+    }
+
+    _controller.forward(from: 0.0);
+  }
+
+  @override
+  void didUpdateWidget(AnimatedQuizCategories oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.categories.length != oldWidget.categories.length &&
+        widget.categories.isNotEmpty) {
+      _setupAnimations(widget.categories.length);
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller.dispose(); // Now safe to call dispose
     super.dispose();
   }
 
   Widget buildAnimatedButton(int index) {
-    final item = categories[index];
+    final item = widget.categories[index];
+    // Define temporary icon/color logic since your DB doesn't store them directly.
+    // In a real app, you'd fetch these from the QuizCategory entity.
+    final List<IconData> icons = [
+      Icons.lightbulb_outline,
+      Icons.sports_soccer,
+      Icons.movie_outlined,
+      Icons.music_note_outlined,
+      Icons.shopping_bag_outlined,
+    ];
+    final List<Color> colors = [
+      Color(0xFF41A8E4),
+      Color(0xFFE45B41),
+      Color(0xFF41E45B),
+      Color(0xFFE4B641),
+      Color(0xFFE441A8),
+    ];
+
+    // Check if animations are ready before using them
+    if (_slideAnimations.isEmpty || index >= _slideAnimations.length) {
+      return const SizedBox.shrink();
+    }
+
     return SlideTransition(
       position: _slideAnimations[index],
       child: ScaleTransition(
         scale: _scaleAnimations[index],
         child: CustomPillButton(
-          icon: item['icon'],
-          label: item['label'],
-          color: item['color'],
+          icon: icons[index % icons.length],
+          label: item.name,
+          color: colors[index % colors.length],
           onPress: () {
-            Navigator.pushNamed(context, '/showQuestion');
+            Navigator.pushNamed(
+              context,
+              '/showQuestion',
+              arguments: {'categoryId': item.id, 'difficulty': "easy"},
+            );
           },
         ),
       ),
@@ -82,6 +122,18 @@ class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories> with Ti
 
   @override
   Widget build(BuildContext context) {
+    if (widget.categories.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Text(
+            'No quiz categories available.',
+            style: TextStyle(color: AppColors.surfaceWhite),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child: Column(
@@ -95,9 +147,9 @@ class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories> with Ti
                 Text(
                   'Quiz',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: AppColors.surfaceWhite,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: AppColors.surfaceWhite,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 TextButton(
                   onPressed: () {},
@@ -115,7 +167,7 @@ class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories> with Ti
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              itemCount: categories.length,
+              itemCount: widget.categories.length, // Use the fetched list count
               separatorBuilder: (_, __) => const SizedBox(width: 16),
               itemBuilder: (_, index) => buildAnimatedButton(index),
             ),
