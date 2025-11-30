@@ -20,15 +20,23 @@ class RemoteCategoriesDatasourceImpl implements RemoteCategoriesDatasource {
 
   @override
   Future<String?> getCategoryNameById(String categoryId) async {
+    print('Datasource: Querying category with ID: $categoryId');
+
     final response = await supabase
         .from('categories')
         .select('name')
         .eq('id', categoryId)
         .maybeSingle();
 
+    print('Datasource: Response: $response');
+
     if (response != null) {
-      return response['name'] as String;
+      final name = response['name'] as String;
+      print('Datasource: Found category name: $name');
+      return name;
     }
+
+    print('Datasource: No category found for ID: $categoryId');
     return null;
   }
 }

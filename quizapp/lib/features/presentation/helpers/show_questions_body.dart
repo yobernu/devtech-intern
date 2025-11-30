@@ -21,6 +21,7 @@ class ShowQuestionsBody extends StatefulWidget {
   final VoidCallback on5050Pressed;
   final VoidCallback onAudiencePressed;
   final VoidCallback onHintPressed;
+  final String? imageUrl;
 
   const ShowQuestionsBody({
     super.key,
@@ -37,6 +38,7 @@ class ShowQuestionsBody extends StatefulWidget {
     required this.on5050Pressed,
     required this.onAudiencePressed,
     required this.onHintPressed,
+    this.imageUrl,
   });
 
   @override
@@ -130,14 +132,59 @@ class _ShowQuestionsBodyState extends State<ShowQuestionsBody> {
                       ),
                     ],
                   ),
-                  child: Text(
-                    widget.questionText,
-                    style: const TextStyle(
-                      color: AppColors.darkText,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
+                  child: Column(
+                    children: [
+                      Text(
+                        widget.questionText,
+                        style: const TextStyle(
+                          color: AppColors.darkText,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      if (widget.imageUrl != null &&
+                          widget.imageUrl!.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            widget.imageUrl!,
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 200,
+                                width: double.infinity,
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.broken_image, size: 50),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                height: 200,
+                                width: double.infinity,
+                                color: Colors.grey[200],
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value:
+                                        loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                  .cumulativeBytesLoaded /
+                                              loadingProgress
+                                                  .expectedTotalBytes!
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
 
@@ -207,7 +254,7 @@ class _ShowQuestionsBodyState extends State<ShowQuestionsBody> {
                 SmallActionButton(
                   icon: Icons.people_alt,
                   label: 'Audience',
-                  color: AppColors.smallButtonRed,
+                  color: AppColors.accentPink,
                   onPress: widget.onAudiencePressed,
                 ),
                 const SizedBox(width: 12),

@@ -111,8 +111,8 @@ class _AnimatedQuizCategoriesState extends State<AnimatedQuizCategories>
           onPress: () {
             Navigator.pushNamed(
               context,
-              '/showQuestion',
-              arguments: {'categoryId': item.id, 'difficulty': "easy"},
+              '/difficultySelection',
+              arguments: {'categoryId': item.id, 'categoryName': item.name},
             );
           },
         ),

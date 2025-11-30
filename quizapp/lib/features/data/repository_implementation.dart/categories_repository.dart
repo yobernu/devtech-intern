@@ -59,7 +59,12 @@ class CategoriesRepositoryImpl implements CategoriesRepository {
       final categoryName = await remoteCategoriesDatasource.getCategoryNameById(
         id,
       );
-      return Right(categoryName!);
+
+      if (categoryName == null) {
+        return Left(ServerFailure("Category not found with id: $id"));
+      }
+
+      return Right(categoryName);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

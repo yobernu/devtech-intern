@@ -12,11 +12,11 @@ class SmallActionButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.color,
-    required this.onPress
+    required this.onPress,
   });
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     return Column(
       children: [
         GestureDetector(
@@ -25,13 +25,13 @@ class SmallActionButton extends StatelessWidget {
             height: 80,
             width: 80,
             decoration: BoxDecoration(
-              color: AppColors.smallButtonBlue.withOpacity(0.2),
+              color: AppColors.smallButtonBlue.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: color.withOpacity(0.4),
-                  blurRadius: 6,
-                  offset: const Offset(0, 3),
+                  color: color.withOpacity(0.9),
+                  blurRadius: 2,
+                  offset: const Offset(0, 1),
                 ),
               ],
             ),

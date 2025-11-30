@@ -38,8 +38,12 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
   @override
   void initState() {
     super.initState();
-    _displayCategoryLabel = widget.categoryLabel;
-    _fetchCategoryNameIfNeeded();
+    if (widget.categoryLabel.isNotEmpty && widget.categoryLabel != 'General') {
+      _displayCategoryLabel = '...';
+      _fetchCategoryNameIfNeeded();
+    } else {
+      _displayCategoryLabel = widget.categoryLabel;
+    }
   }
 
   void _fetchCategoryNameIfNeeded() {
@@ -65,6 +69,10 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
         if (state is CategoriesLoadedNameState) {
           setState(() {
             _displayCategoryLabel = state.categoryName;
+          });
+        } else if (state is CategoriesFailureState) {
+          setState(() {
+            _displayCategoryLabel = 'Quiz';
           });
         }
       },
@@ -174,7 +182,19 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
                 const SizedBox(height: 48),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'reviewAnswer');
+                    final difficulty = widget.attemptedQuestions.isNotEmpty
+                        ? widget.attemptedQuestions.first.difficulty
+                        : Difficulty.easy;
+
+                    Navigator.pushNamed(
+                      context,
+                      '/reviewAnswer',
+                      arguments: {
+                        'questions': widget.attemptedQuestions,
+                        'categoryName': _displayCategoryLabel,
+                        'difficulty': difficulty.name,
+                      },
+                    );
                   },
                   child: const Text("Review questions"),
                 ),

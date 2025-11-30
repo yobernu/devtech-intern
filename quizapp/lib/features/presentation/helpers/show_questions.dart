@@ -281,6 +281,7 @@ class _ShowQuestionState extends State<ShowQuestion> {
             onAudiencePressed: () =>
                 _useAudience(currentQuestion.correctAnswerIndex),
             onHintPressed: () => _useHint(currentQuestion.hint),
+            imageUrl: currentQuestion.imageUrl,
           );
         }
 

@@ -8,6 +8,7 @@ import 'package:quizapp/features/presentation/di_container.dart' as di;
 import 'package:quizapp/features/presentation/helpers/check_answers.dart';
 import 'package:quizapp/features/presentation/helpers/quiz_result_message.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_bloc.dart';
+import 'package:quizapp/features/presentation/screens/difficulty_selection_screen.dart';
 import 'package:quizapp/features/presentation/screens/homescreen.dart';
 import 'package:quizapp/features/presentation/screens/quiz_app_dashboard.dart';
 import 'package:quizapp/features/presentation/screens/show_question_screen.dart';
@@ -34,6 +35,7 @@ class AppRoutes {
   static const String home = '/home';
   static const String quizDashboard = '/quizDashboard';
   static const String forgotPassword = '/forgotPassword';
+  static const String difficultySelection = '/difficultySelection';
   static const String showQuestion = '/showQuestion';
   static const String resultScreen = '/resultScreen';
   static const String reviewAnswer = '/reviewAnswer';
@@ -44,6 +46,23 @@ class AppRoutes {
     signup: (context) => const SignupScreen(),
     home: (context) => const HomeScreen(),
     forgotPassword: (context) => const ForgotPasswordScreen(),
+    difficultySelection: (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final categoryId = args?['categoryId'] as String? ?? '';
+      final categoryName = args?['categoryName'] as String? ?? 'Quiz';
+
+      if (categoryId.isEmpty) {
+        return const Scaffold(
+          body: Center(child: Text('Error: Category not found.')),
+        );
+      }
+
+      return DifficultySelectionScreen(
+        categoryId: categoryId,
+        categoryName: categoryName,
+      );
+    },
     resultScreen: (context) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
@@ -51,7 +70,6 @@ class AppRoutes {
       final isPassed = args?['isPassed'] as bool? ?? false;
       final scoreLabel = args?['scoreLabel'] as String? ?? '';
 
-      // Safely handle categoryLabel which might be an int ID or a String name
       final categoryLabelRaw = args?['categoryLabel'];
       final categoryLabel = categoryLabelRaw?.toString() ?? '';
 
@@ -91,13 +109,25 @@ class AppRoutes {
     reviewAnswer: (context) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      final questions = args?['questions'] as List<Question>;
+      final questions = args?['questions'] as List<Question>? ?? [];
+      final categoryName = args?['categoryName'] as String? ?? 'Quiz';
+      final difficultyString = args?['difficulty'] as String?;
+      final difficulty = _parseDifficulty(difficultyString);
+
       if (questions.isEmpty) {
         return const Scaffold(
-          body: Center(child: Text('Error: Quiz parameters missing.')),
+          body: Center(child: Text('Error: No questions to review.')),
         );
       }
-      return CheckAnswers(questions: questions);
+
+      return BlocProvider(
+        create: (context) => di.sl<CategoriesBloc>(),
+        child: CheckAnswers(
+          questions: questions,
+          categoryName: categoryName,
+          difficulty: difficulty,
+        ),
+      );
     },
   };
 }

@@ -30,14 +30,14 @@ Widget buildBottomNavBar(int selectedIndex, Function(int) onItemTapped) {
         AnimatedNavItem(
           icon: Icons.leaderboard_outlined,
           label: 'Leaderboard',
-          isActive: selectedIndex == 2,
-          onTap: () => onItemTapped(2),
+          isActive: selectedIndex == 1,
+          onTap: () => onItemTapped(1),
         ),
         AnimatedNavItem(
           icon: Icons.settings_outlined,
           label: 'Settings',
-          isActive: selectedIndex == 3,
-          onTap: () => onItemTapped(3),
+          isActive: selectedIndex == 2,
+          onTap: () => onItemTapped(2),
         ),
       ],
     ),
