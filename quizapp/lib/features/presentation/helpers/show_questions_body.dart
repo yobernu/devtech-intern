@@ -126,9 +126,9 @@ class _ShowQuestionsBodyState extends State<ShowQuestionsBody> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.darkText.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+                        color: AppColors.darkText.withOpacity(0.05),
+                        blurRadius: 1,
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
@@ -143,6 +143,8 @@ class _ShowQuestionsBodyState extends State<ShowQuestionsBody> {
                         ),
                         textAlign: TextAlign.center,
                       ),
+
+                      // image box
                       if (widget.imageUrl != null &&
                           widget.imageUrl!.isNotEmpty) ...[
                         const SizedBox(height: 16),
@@ -188,6 +190,7 @@ class _ShowQuestionsBodyState extends State<ShowQuestionsBody> {
                   ),
                 ),
 
+                // timer icon
                 Positioned(
                   right: 10,
                   top: 10,

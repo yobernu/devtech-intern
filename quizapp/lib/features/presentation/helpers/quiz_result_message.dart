@@ -203,7 +203,7 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
                   onPressed: () {
                     Navigator.pushNamedAndRemoveUntil(
                       context,
-                      '/quizDashboard',
+                      '/home',
                       (route) => false,
                     );
                   },
