@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todoapp/features/toDoListApp/presentation/task_provider.dart';
 
 class SearchBox extends StatelessWidget {
-  const SearchBox({Key? key}) : super(key: key);
+  const SearchBox({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +18,12 @@ class SearchBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(30.0),
         color: surfaceColor,
         child: TextField(
+          onChanged: (value) {
+            Provider.of<TaskProvider>(
+              context,
+              listen: false,
+            ).setSearchQuery(value);
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: surfaceColor,

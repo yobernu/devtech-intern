@@ -10,7 +10,7 @@ import 'package:todoapp/features/toDoListApp/presentation/widgets/task_row.dart'
 
 // update
 class CompletedTasksScreen extends StatefulWidget {
-  const CompletedTasksScreen({Key? key}) : super(key: key);
+  const CompletedTasksScreen({super.key});
 
   @override
   State<CompletedTasksScreen> createState() => _CompletedTasksScreenState();
@@ -144,10 +144,14 @@ class _CompletedTasksScreenState extends State<CompletedTasksScreen> {
                     return TaskRow(
                       key: ValueKey(task.id),
                       title: task.title,
+                      description: task.description ?? '',
                       timeInterval: task.endTime != null
                           ? 'Ends: ${_formatDateTime(task.endTime!)}'
                           : 'No end time',
                       isCompleted: task.isCompleted,
+                      category: task.category,
+                      priority: task.priority,
+                      dueDate: task.dueDate,
                       onToggle: () => _handleToggleTask(task),
                       onDelete: () => _handleDeleteTask(task, index),
                     );

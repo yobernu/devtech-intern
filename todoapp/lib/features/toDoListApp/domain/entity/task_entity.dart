@@ -8,6 +8,9 @@ class TaskEntity {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final String category;
+  final String priority; // 'high', 'medium', 'low'
+  final DateTime? dueDate;
+  final List<String> tags;
 
   TaskEntity({
     required this.id,
@@ -19,6 +22,9 @@ class TaskEntity {
     this.startTime,
     this.endTime,
     required this.category,
+    this.priority = 'hard',
+    this.dueDate,
+    this.tags = const [],
   });
 
   TaskEntity copyWith({
@@ -31,6 +37,9 @@ class TaskEntity {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? category,
+    String? priority,
+    DateTime? dueDate,
+    List<String>? tags,
   }) {
     return TaskEntity(
       id: id ?? this.id,
@@ -42,6 +51,9 @@ class TaskEntity {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       category: category ?? this.category,
+      priority: priority ?? this.priority,
+      dueDate: dueDate ?? this.dueDate,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -59,7 +71,10 @@ class TaskEntity {
           ? DateTime.parse(json['startTime'])
           : null,
       endTime: json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
-      category: json['category'],
+      category: json['category'] ?? 'General',
+      priority: json['priority'] ?? 'medium',
+      dueDate: json['dueDate'] != null ? DateTime.parse(json['dueDate']) : null,
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
     );
   }
 
@@ -74,6 +89,9 @@ class TaskEntity {
       'startTime': startTime?.toIso8601String(),
       'endTime': endTime?.toIso8601String(),
       'category': category,
+      'priority': priority,
+      'dueDate': dueDate?.toIso8601String(),
+      'tags': tags,
     };
   }
 
@@ -88,5 +106,8 @@ class TaskEntity {
     startTime,
     endTime,
     category,
+    priority,
+    dueDate,
+    tags,
   ];
 }

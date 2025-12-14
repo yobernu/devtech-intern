@@ -1,152 +1,222 @@
 import 'package:flutter/material.dart';
+import 'package:todoapp/core/constants/app_constants.dart';
+import 'package:todoapp/features/toDoListApp/presentation/widgets/priority_badge.dart';
 
 class TaskRow extends StatelessWidget {
   final String title;
   final String description;
   final String timeInterval;
   final bool isCompleted;
+  final String category;
+  final String priority;
+  final DateTime? dueDate;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
+  final VoidCallback? onEdit;
 
   const TaskRow({
-    Key? key,
+    super.key,
     required this.title,
     this.description = "",
     required this.timeInterval,
     required this.isCompleted,
+    required this.category,
+    required this.priority,
+    this.dueDate,
     required this.onToggle,
     required this.onDelete,
-  }) : super(key: key);
-
-  // Helper function to scale sizes based on screen width (kept from original code)
-  double scale(double size, BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    return size * (screenWidth / 375);
-  }
+    this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Define a modern color palette
-    const Color primaryColor = Color(0xFF4C7FFF); // A vibrant blue
-    const Color completedColor = Color(0xFF17D092); // A fresh green
-    const Color cardBgColor = Colors.white;
-    const Color shadowColor = Color(
-      0xFF3B5B9E,
-    ); // Shadow color based on primary
-    final Color textColor = isCompleted ? Colors.grey.shade600 : Colors.black87;
-    final Color subtitleColor = isCompleted
-        ? Colors.grey.shade400
-        : Colors.grey;
+    final isOverdue =
+        !isCompleted && dueDate != null && dueDate!.isBefore(DateTime.now());
 
-    return GestureDetector(
-      onTap: onToggle,
-      child: Container(
+    return Dismissible(
+      key: Key(title + timeInterval), // Ideally use ID
+      background: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         decoration: BoxDecoration(
-          color: cardBgColor,
+          color: Colors.blue,
           borderRadius: BorderRadius.circular(12),
-          // Subtle border when not completed, a highlight when completed
-          border: isCompleted
-              ? Border.all(color: completedColor.withOpacity(0.5), width: 1.5)
-              : Border.all(color: Colors.grey.shade200, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: shadowColor.withOpacity(isCompleted ? 0.1 : 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
         ),
-        // Using ListTile structure for better alignment and standard design
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-          child: Row(
-            children: [
-              // Modern Checkbox Indicator
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: scale(28, context),
-                height: scale(28, context),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isCompleted ? completedColor : Colors.transparent,
-                  border: Border.all(
-                    color: isCompleted
-                        ? completedColor
-                        : primaryColor.withOpacity(0.7),
-                    width: isCompleted ? 0 : 2,
-                  ),
-                ),
-                child: Center(
-                  child: isCompleted
-                      ? const Icon(Icons.check, color: Colors.white, size: 18)
-                      : Container(), // Empty container when not checked
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Title and Time Interval
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: scale(16, context),
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                        decoration: isCompleted
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
-                        decorationColor: completedColor,
-                        decorationThickness: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      maxLines: 2 ,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: scale(12, context),
-                        fontWeight: FontWeight.w400,
-                        color: textColor,
-                        decoration: isCompleted
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
-                        decorationColor: completedColor,
-                        decorationThickness: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      timeInterval,
-                      style: TextStyle(
-                        fontSize: scale(13, context),
-                        color: subtitleColor,
-                        // No font change to avoid external dependencies like 'preahvihear'
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Delete Button (onDelete logic remains the same)
-              GestureDetector(
-                onTap: onDelete,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Icon(
-                    Icons.delete_outline,
-                    color: Colors.redAccent.withOpacity(0.7),
-                    size: scale(24, context),
-                  ),
-                ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: const Icon(Icons.edit, color: Colors.white),
+      ),
+      secondaryBackground: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          onDelete();
+          return false; // Let parent handle deletion to avoid issues
+        } else {
+          onEdit?.call();
+          return false;
+        }
+      },
+      child: GestureDetector(
+        onTap: onToggle,
+        onLongPress: onEdit,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: isCompleted
+                ? Border.all(color: Colors.green.withOpacity(0.5), width: 1.5)
+                : Border.all(color: Colors.grey.shade200, width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                // Checkbox
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: isCompleted ? Colors.green : Colors.transparent,
+                    border: Border.all(
+                      color: isCompleted ? Colors.green : Colors.grey.shade400,
+                      width: 2,
+                    ),
+                  ),
+                  child: isCompleted
+                      ? const Icon(Icons.check, color: Colors.white, size: 16)
+                      : null,
+                ),
+                const SizedBox(width: 12),
+
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                color: isCompleted
+                                    ? Colors.grey
+                                    : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          PriorityBadge(priority: priority),
+                        ],
+                      ),
+                      if (description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          description,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            decoration: isCompleted
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          // Category
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color:
+                                  (AppConstants.categoryColors[category] ??
+                                          Colors.grey)
+                                      .withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  AppConstants.categoryIcons[category] ??
+                                      Icons.category,
+                                  size: 10,
+                                  color:
+                                      AppConstants.categoryColors[category] ??
+                                      Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        AppConstants.categoryColors[category] ??
+                                        Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          // Time/Date
+                          if (timeInterval.isNotEmpty) ...[
+                            Icon(
+                              Icons.access_time,
+                              size: 12,
+                              color: isOverdue ? Colors.red : Colors.grey,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              timeInterval,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isOverdue ? Colors.red : Colors.grey,
+                                fontWeight: isOverdue
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -7,6 +7,7 @@ import 'package:todoapp/features/toDoListApp/domain/usecase/get_completed_tasks.
 import 'package:todoapp/features/toDoListApp/domain/usecase/get_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/update_task.dart';
 import 'package:todoapp/features/toDoListApp/domain/usecase/delete_task.dart';
+import 'package:todoapp/features/toDoListApp/domain/entity/task_statistics.dart';
 
 class TaskProvider extends ChangeNotifier {
   final AddTask addTask;
@@ -122,6 +123,99 @@ class TaskProvider extends ChangeNotifier {
     });
 
     _setLoading(false);
+  }
+
+  // Filtering & Sorting
+  String _searchQuery = '';
+  String? _categoryFilter;
+  String? _priorityFilter;
+  String _currentTab = 'All'; // All, Active, Completed
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  void setCategoryFilter(String? category) {
+    if (_categoryFilter == category) {
+      _categoryFilter = null; // Toggle off
+    } else {
+      _categoryFilter = category;
+    }
+    notifyListeners();
+  }
+
+  void setPriorityFilter(String? priority) {
+    if (_priorityFilter == priority) {
+      _priorityFilter = null; // Toggle off
+    } else {
+      _priorityFilter = priority;
+    }
+    notifyListeners();
+  }
+
+  void setTab(String tab) {
+    _currentTab = tab;
+    notifyListeners();
+  }
+
+  List<TaskEntity> get filteredTasks {
+    return tasks.where((task) {
+      // Tab filter
+      if (_currentTab == 'Active' && task.isCompleted) return false;
+      if (_currentTab == 'Completed' && !task.isCompleted) return false;
+
+      // Search filter
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final matchesTitle = task.title.toLowerCase().contains(query);
+        final matchesDesc =
+            task.description?.toLowerCase().contains(query) ?? false;
+        if (!matchesTitle && !matchesDesc) return false;
+      }
+
+      // Category filter
+      if (_categoryFilter != null && task.category != _categoryFilter) {
+        return false;
+      }
+
+      // Priority filter
+      if (_priorityFilter != null && task.priority != _priorityFilter) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+  }
+
+  TaskStatistics get statistics {
+    int completed = 0;
+    int overdue = 0;
+    final byCategory = <String, int>{};
+    final byPriority = <String, int>{};
+
+    final now = DateTime.now();
+
+    for (final task in tasks) {
+      if (task.isCompleted) completed++;
+
+      if (!task.isCompleted &&
+          task.dueDate != null &&
+          task.dueDate!.isBefore(now)) {
+        overdue++;
+      }
+
+      byCategory[task.category] = (byCategory[task.category] ?? 0) + 1;
+      byPriority[task.priority] = (byPriority[task.priority] ?? 0) + 1;
+    }
+
+    return TaskStatistics(
+      totalTasks: tasks.length,
+      completedTasks: completed,
+      overdueTasks: overdue,
+      tasksByCategory: byCategory,
+      tasksByPriority: byPriority,
+    );
   }
 
   // Helper methods

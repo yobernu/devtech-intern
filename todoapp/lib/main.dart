@@ -6,6 +6,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:todoapp/core/constants/firebase_services.dart';
 import 'package:todoapp/core/network_info.dart';
+import 'package:todoapp/core/theme/app_theme.dart';
 import 'package:todoapp/features/toDoListApp/data/datasources/task_remote_datasource.dart';
 import 'package:todoapp/features/toDoListApp/data/datasources/tasks_local_datasource.dart';
 import 'package:todoapp/features/toDoListApp/data/repositories/taskrepositoryimpl.dart';
@@ -91,27 +92,7 @@ class MyApp extends StatelessWidget {
         initialRoute: AppRoutes.home,
         routes: AppRoutes.routes,
         builder: EasyLoading.init(),
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          fontFamily: 'preahvihear',
-          textTheme: const TextTheme(
-            displayLarge: TextStyle(fontFamily: 'preahvihear'),
-            displayMedium: TextStyle(fontFamily: 'preahvihear'),
-            displaySmall: TextStyle(fontFamily: 'preahvihear'),
-            headlineMedium: TextStyle(fontFamily: 'preahvihear'),
-            headlineSmall: TextStyle(fontFamily: 'preahvihear'),
-            titleLarge: TextStyle(fontFamily: 'preahvihear'),
-            titleMedium: TextStyle(fontFamily: 'preahvihear'),
-            titleSmall: TextStyle(fontFamily: 'preahvihear'),
-            bodyLarge: TextStyle(fontFamily: 'preahvihear'),
-            bodyMedium: TextStyle(fontFamily: 'preahvihear'),
-            bodySmall: TextStyle(fontFamily: 'preahvihear'),
-            labelLarge: TextStyle(fontFamily: 'preahvihear'),
-            labelMedium: TextStyle(fontFamily: 'preahvihear'),
-            labelSmall: TextStyle(fontFamily: 'preahvihear'),
-          ),
-        ),
+        theme: AppTheme.lightTheme,
       ),
     );
   }
