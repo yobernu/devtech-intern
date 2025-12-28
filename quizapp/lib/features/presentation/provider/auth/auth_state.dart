@@ -54,3 +54,8 @@ class UserFailureState extends UserState {
 
   UserFailureState(this.failure);
 }
+
+class UserOtpSentState extends UserState {
+  final String phoneNumber;
+  UserOtpSentState(this.phoneNumber);
+}

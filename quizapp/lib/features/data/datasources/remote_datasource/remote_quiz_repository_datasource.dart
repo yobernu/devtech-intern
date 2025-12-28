@@ -8,6 +8,8 @@ abstract class RemoteQuizDataSource {
     String categoryId,
     String difficulty,
   );
+  Future<void> updateUserScore(int newScore);
+  Future<int> getUserScore();
 }
 
 class RemoteQuizDataSourceImpl implements RemoteQuizDataSource {
@@ -39,5 +41,36 @@ class RemoteQuizDataSourceImpl implements RemoteQuizDataSource {
     return (response as List)
         .map((item) => QuestionModel.fromJson(item))
         .toList();
+  }
+
+  @override
+  Future<int> getUserScore() async {
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    final response = await supabase
+        .from('profiles')
+        .select('score')
+        .eq('id', userId)
+        .single();
+
+    return response['score'] as int? ?? 0;
+  }
+
+  @override
+  Future<void> updateUserScore(int newScore) async {
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      throw Exception('No authenticated user found');
+    }
+
+    await supabase
+        .from('profiles')
+        .update({'score': newScore})
+        .eq('id', userId);
   }
 }

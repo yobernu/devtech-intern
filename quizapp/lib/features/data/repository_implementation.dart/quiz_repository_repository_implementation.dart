@@ -60,4 +60,32 @@ class QuizRepositoryImpl implements QuizRepository {
     // TODO: implement getAllQuestions
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> updateUserScore(int newScore) async {
+    final isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        await remoteDataSource.updateUserScore(newScore);
+        await localQuizDataSource.cacheUserScore(newScore);
+      } catch (e) {
+        return localQuizDataSource.cacheUserScore(newScore);
+      }
+    } else {
+      return localQuizDataSource.cacheUserScore(newScore);
+    }
+  }
+
+  @override
+  Future<int> getUserScore() async {
+    final isConnected = await networkInfo.isConnected;
+    if (isConnected) {
+      try {
+        return remoteDataSource.getUserScore();
+      } catch (e) {
+        return localQuizDataSource.getUserScore();
+      }
+    }
+    return localQuizDataSource.getUserScore();
+  }
 }

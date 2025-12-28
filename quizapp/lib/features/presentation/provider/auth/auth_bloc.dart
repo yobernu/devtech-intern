@@ -8,11 +8,15 @@ import 'package:quizapp/features/auth/domain/entity/user_entity.dart';
 import 'package:quizapp/features/auth/domain/usecases/auth_status_usecase.dart';
 import 'package:quizapp/features/auth/domain/usecases/get_currentuser.dart';
 import 'package:quizapp/features/auth/domain/usecases/login_usecase.dart';
-import 'package:quizapp/features/auth/domain/usecases/refresh_token_usecase.dart'; // ADDED
+import 'package:quizapp/features/auth/domain/usecases/refresh_token_usecase.dart';
 import 'package:quizapp/features/auth/domain/usecases/signout_usecase.dart';
 import 'package:quizapp/features/auth/domain/usecases/signup_usecase.dart';
+import 'package:quizapp/features/auth/domain/usecases/update_user_score_usecase.dart';
 import 'package:quizapp/features/presentation/provider/auth/auth_event.dart';
 import 'package:quizapp/features/presentation/provider/auth/auth_state.dart';
+import 'package:quizapp/features/auth/domain/usecases/google_sign_in_usecase.dart';
+import 'package:quizapp/features/auth/domain/usecases/phone_sign_in_usecase.dart';
+import 'package:quizapp/features/auth/domain/usecases/verify_otp_usecase.dart';
 
 class AuthBloc extends Bloc<UserEvent, UserState> {
   final SignUpUseCase signUpUseCase;
@@ -20,7 +24,11 @@ class AuthBloc extends Bloc<UserEvent, UserState> {
   final SignOutUseCase signOutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final CheckAuthStatusUseCase checkAuthStatusUseCase;
-  final RefreshTokenUsecase refreshTokenUseCase; // ADDED
+  final RefreshTokenUsecase refreshTokenUseCase;
+  final UpdateUserScoreUseCase updateUserScoreUseCase;
+  final GoogleSignInUseCase googleSignInUseCase;
+  final PhoneSignInUseCase phoneSignInUseCase;
+  final VerifyOtpUseCase verifyOtpUseCase;
   final InternetConnectionChecker connectionChecker;
 
   // Supabase tokens expire after 60 mins (3600s). We refresh preemptively.
@@ -36,7 +44,11 @@ class AuthBloc extends Bloc<UserEvent, UserState> {
     required this.getCurrentUserUseCase,
     required this.checkAuthStatusUseCase,
     required this.connectionChecker,
-    required this.refreshTokenUseCase, // ADDED
+    required this.refreshTokenUseCase,
+    required this.updateUserScoreUseCase,
+    required this.googleSignInUseCase,
+    required this.phoneSignInUseCase,
+    required this.verifyOtpUseCase,
   }) : super(UserInitialState()) {
     // The event handler signature must match Emitter signature
     on<SignUpRequestedEvent>(_onSignup);
@@ -44,6 +56,10 @@ class AuthBloc extends Bloc<UserEvent, UserState> {
     on<SignOutRequestedEvent>(_onSignOut);
     on<CheckAuthenticationStatusEvent>(_onCheckAuthStatus);
     on<RefreshTokenEvent>(_onRefreshToken);
+    on<UpdateUserScoreEvent>(_onUpdateUserScore);
+    on<GoogleSignInRequestedEvent>(_onGoogleSignIn);
+    on<PhoneSignInRequestedEvent>(_onPhoneSignIn);
+    on<VerifyOtpRequestedEvent>(_onVerifyOtp);
   }
 
   // --- Session Management ---
@@ -194,5 +210,85 @@ class AuthBloc extends Bloc<UserEvent, UserState> {
         },
       ),
     );
+  }
+
+  Future<void> _onUpdateUserScore(
+    UpdateUserScoreEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    // We don't necessarily want to show a loading spinner for score updates in the background
+    // but if we do, we can emit UserLoadingState.
+    // For now, let's just perform the update.
+
+    final result = await updateUserScoreUseCase.call(
+      UpdateUserScoreParams(score: event.score),
+    );
+
+    result.fold(
+      (failure) {
+        // Optionally emit a failure state or just log it
+        // emit(UserFailureState(failure));
+        print('Failed to update score: ${failure.message}');
+      },
+      (_) {
+        print('Score updated successfully');
+        // Optionally fetch updated user data if needed
+        add(CheckAuthenticationStatusEvent());
+      },
+    );
+  }
+
+  Future<void> _onGoogleSignIn(
+    GoogleSignInRequestedEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(UserLoadingState());
+    if (!await connectionChecker.hasConnection) {
+      emit(UserFailureState(ServerFailure('No internet connection')));
+      return;
+    }
+    final result = await googleSignInUseCase(NoParams());
+    result.fold((failure) => emit(UserFailureState(failure)), (user) {
+      _currentUser = user;
+      _startSessionTimer();
+      emit(UserLogInSuccessState(user));
+    });
+  }
+
+  Future<void> _onPhoneSignIn(
+    PhoneSignInRequestedEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(UserLoadingState());
+    if (!await connectionChecker.hasConnection) {
+      emit(UserFailureState(ServerFailure('No internet connection')));
+      return;
+    }
+    final result = await phoneSignInUseCase(
+      PhoneSignInParams(phoneNumber: event.phoneNumber),
+    );
+    result.fold(
+      (failure) => emit(UserFailureState(failure)),
+      (_) => emit(UserOtpSentState(event.phoneNumber)),
+    );
+  }
+
+  Future<void> _onVerifyOtp(
+    VerifyOtpRequestedEvent event,
+    Emitter<UserState> emit,
+  ) async {
+    emit(UserLoadingState());
+    if (!await connectionChecker.hasConnection) {
+      emit(UserFailureState(ServerFailure('No internet connection')));
+      return;
+    }
+    final result = await verifyOtpUseCase(
+      VerifyOtpParams(phone: event.phone, token: event.token),
+    );
+    result.fold((failure) => emit(UserFailureState(failure)), (user) {
+      _currentUser = user;
+      _startSessionTimer();
+      emit(UserLogInSuccessState(user));
+    });
   }
 }

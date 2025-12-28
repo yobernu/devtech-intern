@@ -111,7 +111,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   AuthButton(
                     onPressed: _handleForgotPassword,
                     title: "SEND RESET LINK",
-                     fgColor: AppColors.lightSurface,
+                    fgColor: AppColors.lightSurface,
                   ),
 
                   const SizedBox(height: 40),

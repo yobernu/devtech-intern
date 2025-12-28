@@ -42,3 +42,33 @@ class SignOutRequestedEvent extends UserEvent {
 class CheckAuthenticationStatusEvent extends UserEvent {}
 
 class RefreshTokenEvent extends UserEvent {}
+
+class UpdateUserScoreEvent extends UserEvent {
+  final int score;
+
+  const UpdateUserScoreEvent({required this.score});
+
+  @override
+  List<Object> get props => [score];
+}
+
+class GoogleSignInRequestedEvent extends UserEvent {}
+
+class PhoneSignInRequestedEvent extends UserEvent {
+  final String phoneNumber;
+
+  const PhoneSignInRequestedEvent({required this.phoneNumber});
+
+  @override
+  List<Object> get props => [phoneNumber];
+}
+
+class VerifyOtpRequestedEvent extends UserEvent {
+  final String phone;
+  final String token;
+
+  const VerifyOtpRequestedEvent({required this.phone, required this.token});
+
+  @override
+  List<Object> get props => [phone, token];
+}

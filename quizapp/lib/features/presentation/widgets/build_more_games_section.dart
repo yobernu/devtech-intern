@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
+
+import 'package:quizapp/features/presentation/navigation/navigation.dart';
 import 'package:quizapp/features/presentation/widgets/cards/more_game_card.dart';
 
 Widget buildMoreGamesSection(BuildContext context) {
@@ -37,6 +39,20 @@ Widget buildMoreGamesSection(BuildContext context) {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             children: [
+              GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.xoGame);
+                },
+                child: MoreGameCard(
+                  title: 'X/O Kings',
+                  questions: 'Multiplayer',
+                  score: 'New!',
+                  icon: Icons.games,
+                  gradientStart: const Color(0xFF00C6FF),
+                  gradientEnd: const Color(0xFF0072FF),
+                  subtitle: '',
+                ),
+              ),
               MoreGameCard(
                 title: 'Language Quiz',
                 questions: '15 Questions',

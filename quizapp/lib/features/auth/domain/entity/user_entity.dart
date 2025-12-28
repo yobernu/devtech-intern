@@ -3,6 +3,7 @@ class UserEntity {
   final String email;
   final String username;
   final String? profileImageUrl;
+  final String? phoneNumber;
   final String? accessToken;
   final String? refreshToken;
   final String? role;
@@ -18,6 +19,7 @@ class UserEntity {
     required this.email,
     required this.username,
     this.profileImageUrl,
+    this.phoneNumber,
     this.accessToken,
     this.refreshToken,
     this.role,
@@ -35,6 +37,7 @@ class UserEntity {
       email: json['email'],
       username: json['username'],
       profileImageUrl: json['profileImageUrl'],
+      phoneNumber: json['phone_number'] ?? json['phoneNumber'],
       accessToken: json['accessToken'],
       refreshToken: json['refreshToken'],
       role: json['role'],
@@ -53,6 +56,7 @@ class UserEntity {
       'email': email,
       'username': username,
       'profileImageUrl': profileImageUrl,
+      'phoneNumber': phoneNumber,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
       'role': role,
@@ -67,6 +71,6 @@ class UserEntity {
 
   @override
   String toString() {
-    return 'UserEntity(id: $id, email: $email, username: $username, profileImageUrl: $profileImageUrl, accessToken: $accessToken, refreshToken: $refreshToken, role: $role, experiencePoints: $experiencePoints, rank: $rank, score: $score, joinDate: $joinDate, friends: $friends, categoryStats: $categoryStats)';
+    return 'UserEntity(id: $id, email: $email, username: $username, profileImageUrl: $profileImageUrl, phoneNumber: $phoneNumber, accessToken: $accessToken, refreshToken: $refreshToken, role: $role, experiencePoints: $experiencePoints, rank: $rank, score: $score, joinDate: $joinDate, friends: $friends, categoryStats: $categoryStats)';
   }
 }

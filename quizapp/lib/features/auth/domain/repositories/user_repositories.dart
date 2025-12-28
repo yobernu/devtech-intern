@@ -17,6 +17,13 @@ abstract class UserRepository {
 
   Future<Either<Failure, UserEntity>> signInWithGoogle();
 
+  Future<Either<Failure, Unit>> signInWithPhone({required String phoneNumber});
+
+  Future<Either<Failure, UserEntity>> verifyPhoneOtp({
+    required String phone,
+    required String token,
+  });
+
   Future<Either<Failure, Unit>> signOut();
 
   Future<Either<Failure, UserEntity>> getCurrentUser();
@@ -36,4 +43,5 @@ abstract class UserRepository {
   Future<Either<Failure, Unit>> resetPassword({required String email});
   Future<Either<Failure, bool>> isAuthenticated();
   Future<Either<Failure, UserEntity>> refreshToken();
+  Future<Either<Failure, Unit>> updateUserScore(int score);
 }

@@ -4,10 +4,13 @@ import 'package:quizapp/features/data/models/question_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String CACHED_QUESTIONS_KEY = "Questions";
+const String USER_SCORE_KEY = "score";
 
 abstract class LocalQuizDatasources {
   Future<void> cacheQuestions(List<QuestionModel> questions);
   Future<List<QuestionModel>> getCachedQuestions();
+  Future<int> getUserScore();
+  Future<void> cacheUserScore(int score);
 }
 
 class LocalQuizDataSourcesImpl implements LocalQuizDatasources {
@@ -43,5 +46,16 @@ class LocalQuizDataSourcesImpl implements LocalQuizDatasources {
     } else {
       throw CacheException();
     }
+  }
+
+  @override
+  Future<void> cacheUserScore(int score) async {
+    await sharedPreferences.setInt(USER_SCORE_KEY, score);
+  }
+
+  @override
+  Future<int> getUserScore() async {
+    final int score = sharedPreferences.getInt(USER_SCORE_KEY) ?? 0;
+    return score;
   }
 }

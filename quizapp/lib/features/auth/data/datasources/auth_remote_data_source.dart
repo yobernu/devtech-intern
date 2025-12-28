@@ -6,6 +6,7 @@ import 'package:quizapp/core/errors/exceptions.dart'; // Ensure this class exist
 import 'package:quizapp/core/errors/failures.dart';
 import 'package:quizapp/features/auth/domain/entity/user_entity.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 abstract class RemoteAuthDataSource {
   Future<UserEntity> signUp({
@@ -16,6 +17,11 @@ abstract class RemoteAuthDataSource {
   Future<UserEntity> signIn({required String email, required String password});
   Future<UserEntity> signOut();
   Future<UserEntity> signInWithGoogle();
+  Future<void> signInWithPhone({required String phoneNumber});
+  Future<UserEntity> verifyPhoneOtp({
+    required String phone,
+    required String token,
+  });
   Future<UserEntity> getCurrentUser();
   Future<bool> isAuthenticated();
   Future<UserEntity> refreshToken();
@@ -25,6 +31,7 @@ abstract class RemoteAuthDataSource {
     required String password,
   });
   Future<UserEntity> updateProfilePicture({required String imageUrl});
+  Future<void> updateUserScore(int score);
 }
 
 class AuthRemoteDataSourceImpl implements RemoteAuthDataSource {
@@ -38,7 +45,7 @@ class AuthRemoteDataSourceImpl implements RemoteAuthDataSource {
   UserEntity _mapProfileData(Map<String, dynamic> profileData) {
     return UserEntity(
       id: profileData['id'],
-      email: profileData['email'],
+      email: profileData['email'] ?? '',
       username: profileData['username'],
       profileImageUrl: profileData['avatar_url'] ?? '',
       experiencePoints: profileData['experience_points'] ?? 0,
@@ -148,9 +155,89 @@ class AuthRemoteDataSourceImpl implements RemoteAuthDataSource {
   }
 
   @override
-  Future<UserEntity> signInWithGoogle() {
-    // TODO: implement signInWithGoogle
-    throw UnimplementedError();
+  Future<UserEntity> signInWithGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw ServerException('Google sign in cancelled by user.');
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? accessToken = googleAuth.accessToken;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw ServerException('No ID Token found from Google Sign In.');
+      }
+
+      final AuthResponse response = await auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      if (response.user != null) {
+        // Upsert profile
+        await supabase.from('profiles').upsert({
+          'id': response.user!.id,
+          'email': googleUser.email,
+          'username': googleUser.displayName ?? 'Google User',
+          'avatar_url': googleUser.photoUrl,
+        });
+        return await getCurrentUser();
+      } else {
+        throw ServerException(
+          'Sign in with Google failed, user object is null.',
+        );
+      }
+    } catch (e) {
+      throw ServerException('Google sign in failed: $e');
+    }
+  }
+
+  @override
+  Future<void> signInWithPhone({required String phoneNumber}) async {
+    try {
+      await auth.signInWithOtp(phone: phoneNumber);
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException('Failed to send OTP: $e');
+    }
+  }
+
+  @override
+  Future<UserEntity> verifyPhoneOtp({
+    required String phone,
+    required String token,
+  }) async {
+    try {
+      final AuthResponse response = await auth.verifyOTP(
+        type: OtpType.sms,
+        token: token,
+        phone: phone,
+      );
+
+      if (response.user != null) {
+        // Upsert profile for phone user
+        // We might not have email or username, set defaults
+        await supabase.from('profiles').upsert({
+          'id': response.user!.id,
+          'username': 'Phone User', // they can update later
+          // email might be null
+        });
+        return await getCurrentUser();
+      } else {
+        throw ServerException('OTP Verification failed, user is null.');
+      }
+    } on AuthException catch (e) {
+      throw ServerException(e.message);
+    } catch (e) {
+      throw ServerException('OTP Verification failed: $e');
+    }
   }
 
   @override
@@ -262,6 +349,38 @@ class AuthRemoteDataSourceImpl implements RemoteAuthDataSource {
     } catch (e) {
       throw ServerException(
         'An unexpected error occurred during profile picture update: $e',
+      );
+    }
+  }
+
+  @override
+  Future<void> updateUserScore(int scoreToAdd) async {
+    final User? user = auth.currentUser;
+    if (user == null) {
+      throw ServerException('No authenticated user found.');
+    }
+
+    try {
+      // 1. Fetch current score
+      final profileData = await supabase
+          .from('profiles')
+          .select('score')
+          .eq('id', user.id)
+          .single();
+
+      final currentScore = profileData['score'] as int? ?? 0;
+      final newScore = currentScore + scoreToAdd;
+
+      // 2. Update with new total score
+      await supabase
+          .from('profiles')
+          .update({'score': newScore})
+          .eq('id', user.id);
+    } on PostgrestException catch (e) {
+      throw ServerException('Failed to update score: ${e.message}');
+    } catch (e) {
+      throw ServerException(
+        'An unexpected error occurred during score update: $e',
       );
     }
   }

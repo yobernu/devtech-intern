@@ -1,71 +1,104 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quizapp/core/constants/appcolors.dart';
+import 'package:quizapp/features/domain/entities/leaderboard_entity.dart';
+import 'package:quizapp/features/presentation/di_container.dart' as di;
 import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
+import 'package:quizapp/features/presentation/provider/leaderboard/leaderboard_bloc.dart';
+import 'package:quizapp/features/presentation/provider/leaderboard/leaderboard_event.dart';
+import 'package:quizapp/features/presentation/provider/leaderboard/leaderboard_state.dart';
 
-class LeaderBoardScreen extends StatelessWidget {
+class LeaderBoardScreen extends StatefulWidget {
   const LeaderBoardScreen({super.key});
 
-  final List<Map<String, dynamic>> items = const [
-    {"title": "Grace", "points": 4500},
-    {"title": "John", "points": 3200},
-    {"title": "Sam", "points": 2850},
-    {"title": "Aisha", "points": 2100},
-    {"title": "Ben", "points": 1900},
-    {"title": "Chloe", "points": 1500},
-    {"title": "David", "points": 1000},
-    {"title": "Emma", "points": 900},
-    {"title": "Frank", "points": 850},
-    {"title": "Hannah", "points": 700},
-  ];
+  @override
+  State<LeaderBoardScreen> createState() => _LeaderBoardScreenState();
+}
 
- @override
+class _LeaderBoardScreenState extends State<LeaderBoardScreen> {
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent, 
-      body: MeshGradientBackground(
-        child: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 24),
-                  child: PodiumWidget(
-                    firstName: "Abebe",
-                    secondName: "Daniel",
-                    thirdName: "Yoseph",
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter( 
+    return BlocProvider(
+      create: (context) =>
+          di.sl<LeaderboardBloc>()..add(const FetchLeaderboardEvent()),
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
+        body: MeshGradientBackground(
+          child: SafeArea(
+            child: BlocBuilder<LeaderboardBloc, LeaderboardState>(
+              builder: (context, state) {
+                if (state is LeaderboardLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is LeaderboardError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                } else if (state is LeaderboardLoaded) {
+                  final leaderboard = state.leaderboard;
+                  if (leaderboard.isEmpty) {
+                    return const Center(
+                      child: Text('No leaderboard data available.'),
+                    );
+                  }
 
-                 child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 24),
-                  decoration: BoxDecoration(
-                    color: AppColors.lightSurface,
-                    borderRadius: BorderRadius.circular(20)
-                  ),
-                  child: Column(
-                    children: [
-                      ...items.map((item) {
-                        final index = items.indexOf(item);
-                        final rank = index + 4;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-                          child: LeaderboardListItem(
-                            rank: rank,
-                            title: item["title"]!,
-                            points: item["points"]!,
-                            isUser: item["title"] == "John",
+                  // Split data for podium (top 3) and list (rest)
+                  final top3 = leaderboard.take(3).toList();
+                  final rest = leaderboard.skip(3).toList();
+
+                  // Ensure we have enough data for podium, fill with placeholders if needed
+                  // This is a bit simplified, ideally we handle < 3 users gracefully
+                  final first = top3.isNotEmpty ? top3[0] : null;
+                  final second = top3.length > 1 ? top3[1] : null;
+                  final third = top3.length > 2 ? top3[2] : null;
+
+                  return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16, bottom: 24),
+                          child: PodiumWidget(
+                            first: first,
+                            second: second,
+                            third: third,
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: AppColors.lightSurface,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            children: [
+                              ...rest.map((entry) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 4.0,
+                                  ),
+                                  child: LeaderboardListItem(
+                                    rank: entry.rank,
+                                    title: entry.username,
+                                    points: entry.score,
+                                    // Highlight if it's the current user (this logic needs current user ID)
+                                    // For now, we don't have current user ID easily accessible here without AuthBloc
+                                    // We can improve this later.
+                                    isUser: false,
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 32)),
                     ],
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
-            ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           ),
         ),
       ),
@@ -74,16 +107,11 @@ class LeaderBoardScreen extends StatelessWidget {
 }
 
 class PodiumWidget extends StatelessWidget {
-  final String firstName;
-  final String secondName;
-  final String thirdName;
+  final LeaderboardEntry? first;
+  final LeaderboardEntry? second;
+  final LeaderboardEntry? third;
 
-  const PodiumWidget({
-    super.key,
-    required this.firstName,
-    required this.secondName,
-    required this.thirdName,
-  });
+  const PodiumWidget({super.key, this.first, this.second, this.third});
 
   @override
   Widget build(BuildContext context) {
@@ -91,38 +119,42 @@ class PodiumWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _buildPodiumPlace(
-          context,
-          name: secondName,
-          color: AppColors.smallButtonBlue,
-          height: 150,
-          rank: 2,
-          avatarUrl:
-              'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        ),
+        if (second != null)
+          _buildPodiumPlace(
+            context,
+            name: second!.username,
+            color: AppColors.smallButtonBlue,
+            height: 150,
+            rank: 2,
+            avatarUrl: second!.profileImageUrl.isNotEmpty
+                ? second!.profileImageUrl
+                : 'https://ui-avatars.com/api/?name=${second!.username}&background=random',
+          ),
         const SizedBox(width: 12),
-
-        _buildPodiumPlace(
-          context,
-          name: firstName,
-          color: AppColors.primaryPurple,
-          height: 180,
-          rank: 1,
-          avatarUrl:
-              'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          isGold: true,
-        ),
+        if (first != null)
+          _buildPodiumPlace(
+            context,
+            name: first!.username,
+            color: AppColors.primaryPurple,
+            height: 180,
+            rank: 1,
+            avatarUrl: first!.profileImageUrl.isNotEmpty
+                ? first!.profileImageUrl
+                : 'https://ui-avatars.com/api/?name=${first!.username}&background=random',
+            isGold: true,
+          ),
         const SizedBox(width: 12),
-
-        _buildPodiumPlace(
-          context,
-          name: thirdName,
-          color: AppColors.secondaryPurple,
-          height: 120,
-          rank: 3,
-          avatarUrl:
-              'https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        ),
+        if (third != null)
+          _buildPodiumPlace(
+            context,
+            name: third!.username,
+            color: AppColors.secondaryPurple,
+            height: 120,
+            rank: 3,
+            avatarUrl: third!.profileImageUrl.isNotEmpty
+                ? third!.profileImageUrl
+                : 'https://ui-avatars.com/api/?name=${third!.username}&background=random',
+          ),
       ],
     );
   }
@@ -153,6 +185,9 @@ class PodiumWidget extends StatelessWidget {
             radius: 30,
             backgroundImage: NetworkImage(avatarUrl),
             backgroundColor: color.withOpacity(0.8),
+            onBackgroundImageError: (_, __) {
+              // Handle image error silently, maybe show a placeholder icon
+            },
           ),
         ),
 
@@ -195,8 +230,7 @@ class PodiumWidget extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-
-              Text("🏆", style: TextStyle(fontSize: 24)),
+              const Text("🏆", style: TextStyle(fontSize: 24)),
             ],
           ),
         ),
@@ -225,9 +259,7 @@ class LeaderboardListItem extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isUser
-            ? AppColors.primaryPurple.withOpacity(0.15)
-            : null,
+        color: isUser ? AppColors.primaryPurple.withOpacity(0.15) : null,
         borderRadius: BorderRadius.circular(10),
         border: isUser
             ? Border.all(color: AppColors.primaryPurple, width: 2)
@@ -259,21 +291,24 @@ class LeaderboardListItem extends StatelessWidget {
               radius: 18,
               backgroundColor: AppColors.primaryPurple,
               child: Text(
-                title[0].toUpperCase(),
+                title.isNotEmpty ? title[0].toUpperCase() : '?',
                 style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
             const SizedBox(width: 12),
 
             // User Name
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: isUser ? FontWeight.bold : FontWeight.w500,
-                color: isUser
-                    ? AppColors.primaryPurple
-                    : Theme.of(context).textTheme.bodyLarge?.color,
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isUser ? FontWeight.bold : FontWeight.w500,
+                  color: isUser
+                      ? AppColors.primaryPurple
+                      : Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

@@ -23,26 +23,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  bool _isPhoneLogin = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      debugPrint(
-        'Login button pressed ${_emailController.text.trim()} ${_passwordController.text.trim()}',
-      );
-      context.read<AuthBloc>().add(
-        LogInRequestedEvent(
-          email: _emailController.text.trim(),
-          password: _passwordController.text.trim(),
-        ),
-      );
+      if (_isPhoneLogin) {
+        context.read<AuthBloc>().add(
+          PhoneSignInRequestedEvent(phoneNumber: _phoneController.text.trim()),
+        );
+      } else {
+        context.read<AuthBloc>().add(
+          LogInRequestedEvent(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          ),
+        );
+      }
     }
+  }
+
+  void _handleGoogleLogin() {
+    context.read<AuthBloc>().add(GoogleSignInRequestedEvent());
   }
 
   void _showSnackbar(String message, {bool isError = false}) {
@@ -76,6 +86,13 @@ class _LoginScreenState extends State<LoginScreen> {
               Navigator.of(
                 context,
               ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+            } else if (state is UserOtpSentState) {
+              _showSnackbar('OTP Sent to ${state.phoneNumber}');
+              Navigator.pushNamed(
+                context,
+                AppRoutes.otpVerification,
+                arguments: {'phoneNumber': state.phoneNumber},
+              );
             } else if (state is UserFailureState) {
               _showSnackbar(
                 'Login Failed: ${state.failure.message}',
@@ -101,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite.withOpacity(0.9),
+                            color: AppColors.surfaceWhite.withOpacity(1),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
@@ -112,11 +129,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: Center(
                             child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 100,
-                              height: 100,
+                              'assets/images/quizlogo.png',
+                              width: 105,
+                              height: 105,
                               fit: BoxFit.cover,
-                              color: AppColors.primaryPurple,
+                              // color: AppColors.primaryPurple,
                             ),
                           ),
                         ),
@@ -148,18 +165,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         key: _formKey,
                         child: Column(
                           children: [
-                            AuthInputField(
-                              labelText: 'Email',
-                              controller: _emailController,
-                              icon: Icons.email_outlined,
-                            ),
-                            const SizedBox(height: 16),
-                            AuthInputField(
-                              labelText: 'Password',
-                              controller: _passwordController,
-                              icon: Icons.lock_outline,
-                              isObscure: true,
-                            ),
+                            if (_isPhoneLogin)
+                              AuthInputField(
+                                labelText: 'Phone Number (e.g., +1555...)',
+                                controller: _phoneController,
+                                icon: Icons.phone,
+                                // keyboardType: TextInputType.phone,
+                              )
+                            else ...[
+                              AuthInputField(
+                                labelText: 'Email',
+                                controller: _emailController,
+                                icon: Icons.email_outlined,
+                              ),
+                              const SizedBox(height: 16),
+                              AuthInputField(
+                                labelText: 'Password',
+                                controller: _passwordController,
+                                icon: Icons.lock_outline,
+                                isObscure: true,
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -195,9 +221,44 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 40),
                       AuthButton(
                         onPressed: isLoading ? () {} : _handleLogin,
-                        title: isLoading ? "PROCESSING..." : "SIGN IN",
+                        title: isLoading
+                            ? "PROCESSING..."
+                            : (_isPhoneLogin ? "SEND OTP" : "SIGN IN"),
                         fgColor: AppColors.lightSurface,
                       ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(color: AppColors.surfaceWhite),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              "OR",
+                              style: TextStyle(color: AppColors.surfaceWhite),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(color: AppColors.surfaceWhite),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      AuthButton(
+                        onPressed: () {
+                          setState(() {
+                            _isPhoneLogin = !_isPhoneLogin;
+                          });
+                        },
+                        title: _isPhoneLogin
+                            ? "Continue with Email"
+                            : "Continue with Phone",
+                        backgroundColor: Colors.transparent,
+                        borderColor: AppColors.surfaceWhite,
+                        fgColor: AppColors.surfaceWhite,
+                      ),
+                      const SizedBox(height: 10),
 
                       const SizedBox(height: 20),
                       Row(
@@ -245,3 +306,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
+// navigator

@@ -4,6 +4,8 @@ import 'package:quizapp/core/constants/appcolors.dart';
 import 'package:quizapp/features/auth/presentation/widgets/custom_button.dart';
 import 'package:quizapp/features/domain/entities/question_entity.dart';
 import 'package:quizapp/features/presentation/helpers/meshBackground.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_event.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_bloc.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_event.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_state.dart';
@@ -43,6 +45,27 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
       _fetchCategoryNameIfNeeded();
     } else {
       _displayCategoryLabel = widget.categoryLabel;
+    }
+    _updateUserScore();
+  }
+
+  void _updateUserScore() {
+    // Parse scoreLabel "X/Y" to get correct answers
+    try {
+      final parts = widget.scoreLabel.split('/');
+      if (parts.length == 2) {
+        final correctAnswers = int.tryParse(parts[0]) ?? 0;
+        final totalQuestions = int.tryParse(parts[1]) ?? 0;
+
+        // Calculate score: 10 points per correct answer
+        final scoreToAdd = correctAnswers * 10;
+
+        if (scoreToAdd > 0) {
+          context.read<AuthBloc>().add(UpdateUserScoreEvent(score: scoreToAdd));
+        }
+      }
+    } catch (e) {
+      debugPrint('Error updating score: $e');
     }
   }
 
@@ -208,7 +231,7 @@ class _QuizResultMessageState extends State<QuizResultMessage> {
                     );
                   },
                   title: "Explore More",
-                  bgColor: AppColors.accentOrange,
+                  backgroundColor: AppColors.accentOrange,
                   fgColor: AppColors.surfaceWhite,
                 ),
 

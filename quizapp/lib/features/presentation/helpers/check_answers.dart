@@ -172,7 +172,7 @@ class _CheckAnswersState extends State<CheckAnswers> {
                       );
                     },
                     title: "Back to Dashboard",
-                    bgColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.primaryPurple,
                     fgColor: AppColors.surfaceWhite,
                   ),
 

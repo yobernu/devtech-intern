@@ -48,6 +48,10 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  void _handleGoogleSignup() {
+    context.read<AuthBloc>().add(GoogleSignInRequestedEvent());
+  }
+
   // void _showSnackbar(String message, {bool isError = false}) {
   //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
   //   ScaffoldMessenger.of(context).showSnackBar(
@@ -76,10 +80,11 @@ class _SignupScreenState extends State<SignupScreen> {
         // Use BlocConsumer to listen for state changes and rebuild the UI
         child: BlocConsumer<AuthBloc, UserState>(
           listener: (context, state) {
-            if (state is UserSignUpSuccessState) {
+            if (state is UserSignUpSuccessState ||
+                state is UserLogInSuccessState) {
               showSnackbar(
                 context,
-                'Signup successful! Welcome.',
+                'Signup/Login successful! Welcome.',
                 isError: false,
               );
               // Navigate to Home screen on success
@@ -112,7 +117,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite.withOpacity(0.8),
+                            color: AppColors.surfaceWhite.withOpacity(1),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
@@ -123,11 +128,11 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                           child: Center(
                             child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 100,
-                              height: 100,
+                              'assets/images/quizlogo.png',
+                              width: 105,
+                              height: 105,
                               fit: BoxFit.cover,
-                              color: AppColors.primaryPurple,
+                              // color: Colors.transparent,
                             ),
                           ),
                         ),
@@ -179,7 +184,34 @@ class _SignupScreenState extends State<SignupScreen> {
                         fgColor: AppColors.lightSurface,
                       ),
 
-                      // Login Redirect
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Divider(color: AppColors.surfaceWhite),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              "OR",
+                              style: TextStyle(color: AppColors.surfaceWhite),
+                            ),
+                          ),
+                          Expanded(
+                            child: Divider(color: AppColors.surfaceWhite),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      AuthButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.login);
+                        },
+                        title: "Sign up with Phone",
+                        backgroundColor: Colors.transparent,
+                        borderColor: AppColors.surfaceWhite,
+                        fgColor: AppColors.surfaceWhite,
+                      ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

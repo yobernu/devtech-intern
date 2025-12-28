@@ -8,6 +8,7 @@ import 'package:quizapp/features/presentation/navigation/navigation.dart';
 import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_bloc.dart';
 import 'package:quizapp/features/presentation/provider/questions/questions_bloc.dart';
+import 'package:quizapp/features/presentation/provider/user_score/user_score_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:app_links/app_links.dart';
 
@@ -78,6 +79,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => di.sl<AuthBloc>()),
         BlocProvider(create: (_) => di.sl<QuestionsBloc>()),
         BlocProvider(create: (_) => di.sl<CategoriesBloc>()),
+        BlocProvider(create: (_) => di.sl<UserScoreBloc>()),
       ],
       child: MaterialApp(
         title: 'Quiz App UI',
@@ -88,7 +90,7 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: AppColors.surfaceWhite,
         ),
         routes: AppRoutes.routes,
-        initialRoute: AppRoutes.home,
+        initialRoute: AppRoutes.signup,
         debugShowCheckedModeBanner: false,
       ),
     );

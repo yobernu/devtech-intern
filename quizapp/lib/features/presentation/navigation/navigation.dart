@@ -4,14 +4,18 @@ import 'package:quizapp/features/auth/presentation/screens/forgot_password_scree
 import 'package:quizapp/features/auth/presentation/screens/login_screen.dart';
 import 'package:quizapp/features/auth/presentation/screens/signup_screen.dart';
 import 'package:quizapp/features/domain/entities/question_entity.dart';
+import 'package:quizapp/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:quizapp/features/presentation/di_container.dart' as di;
 import 'package:quizapp/features/presentation/helpers/check_answers.dart';
 import 'package:quizapp/features/presentation/helpers/quiz_result_message.dart';
+import 'package:quizapp/features/presentation/provider/auth/auth_bloc.dart';
 import 'package:quizapp/features/presentation/provider/categories/categories_bloc.dart';
 import 'package:quizapp/features/presentation/screens/difficulty_selection_screen.dart';
 import 'package:quizapp/features/presentation/screens/homescreen.dart';
 import 'package:quizapp/features/presentation/screens/quiz_app_dashboard.dart';
 import 'package:quizapp/features/presentation/screens/show_question_screen.dart';
+import 'package:quizapp/features/xo_game/presentation/bloc/xo_game_bloc.dart';
+import 'package:quizapp/features/xo_game/presentation/pages/game_setup_page.dart';
 
 // Helper function to convert a string to a Difficulty enum instance
 Difficulty _parseDifficulty(String? difficultyString) {
@@ -39,6 +43,8 @@ class AppRoutes {
   static const String showQuestion = '/showQuestion';
   static const String resultScreen = '/resultScreen';
   static const String reviewAnswer = '/reviewAnswer';
+  static const String xoGame = '/xoGame';
+  static const String otpVerification = '/otpVerification';
 
   static Map<String, WidgetBuilder> routes = {
     login: (context) => const LoginScreen(),
@@ -78,8 +84,11 @@ class AppRoutes {
       final attemptedQuestions =
           args?['attemptedQuestions'] as List<Question>? ?? [];
 
-      return BlocProvider(
-        create: (context) => di.sl<CategoriesBloc>(),
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (context) => di.sl<CategoriesBloc>()),
+          BlocProvider.value(value: context.read<AuthBloc>()),
+        ],
         child: QuizResultMessage(
           isPassed: isPassed,
           scoreLabel: scoreLabel,
@@ -128,6 +137,16 @@ class AppRoutes {
           difficulty: difficulty,
         ),
       );
+    },
+    xoGame: (context) => BlocProvider(
+      create: (context) => di.sl<XoGameBloc>(),
+      child: const GameSetupPage(),
+    ),
+    otpVerification: (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final phoneNumber = args?['phoneNumber'] as String? ?? '';
+      return OtpVerificationScreen(phoneNumber: phoneNumber);
     },
   };
 }
